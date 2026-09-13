@@ -1,0 +1,175 @@
+# Decisions
+
+One short entry per significant choice: context, decision, trade-off. Add new
+entries at the bottom as the project evolves.
+
+Entries dated 2026-09 predate any code. They were settled while sketching the
+package and are recorded here so they are not re-litigated by whoever starts
+building.
+
+## A separate package, in a separate repository
+
+**Context:** the integration could have been a guarded feature inside
+`albertoarena/laravel-truss`, switched on when Filament is detected.
+**Decision:** a second package in a second repository, `albertoarena/filament-truss`.
+**Trade-off:** a second package must be kept in step with every Truss release,
+and it splits the install numbers, so a Filament install and a Truss install are
+different figures and must never be added together. In exchange, **Truss keeps no
+Filament dependency at all** and the vast majority of its users, who do not run
+Filament, carry nothing for a feature they will never open.
+
+## The name is `filament-truss`, not `filament-truss-erd`
+
+**Context:** putting the category word in the package name makes it findable by a
+Packagist search for "filament erd".
+**Decision:** `albertoarena/filament-truss`. The category word goes where it is
+actually read: the plugin directory listing, the repository description, the
+topics, the Packagist description and the first line of the README.
+**Trade-off:** gives up a Packagist search that the evidence says is barely run,
+in exchange for a name that carries the project it belongs to. A directory
+listing has its own title and description, so nothing is lost where discovery
+actually happens. The `filament-` prefix is community convention rather than a
+rule, and Filament documents no naming or branding policy for third-party
+plugins; that is worth re-checking before the name is registered publicly, since
+Truss has its own trademark file and the courtesy runs both ways.
+
+## A native Filament page, not an iframe and not a restyled embed
+
+**Context:** three options, at very different costs. Iframe the Truss dashboard;
+mount Truss's frontend in a Filament page and restyle it; or build the page from
+Filament's own components.
+**Decision:** the third. A native page, built from panel components, styled by
+panel tokens, carrying none of Truss's own CSS.
+**Trade-off:** the most work of the three, and the only one that can ever link a
+table to its Filament resource. An iframe is an hour of work and will look wrong,
+break the panel's dark mode, lose the sidebar and read as a bolted-on page. **If
+a frame were good enough, Truss already ships a dashboard and a link would do.**
+
+## Depend on `Truss::payload()`, never on Truss internals
+
+**Context:** the dashboard payload (the filtered snapshot plus the diff, the
+findings and the unavailability flags) was originally assembled inside Truss's
+own schema controller. Reaching it meant either an HTTP request from inside the
+application to itself, or constructing `DoctorReport`, `SchemaDiffer` and
+`BaselineStore` by hand, none of which are public API.
+**Decision:** depend on the facade. Truss v1.12.0 added
+`Truss::payload(?string $connection = null)` for exactly this, and it is this
+package's entire data dependency.
+**Trade-off:** ties the minimum Truss version to v1.12.0. That is cheap, and the
+alternative is an integration built on internals, which would make every Truss
+refactor a silent breaking change for our users and would re-price the standing
+cost of maintaining a second package.
+
+## Hand the payload to the frontend in the page, not over HTTP
+
+**Context:** inside a panel, the application already holds the array. Fetching it
+from the application's own URL is a round trip for something already in memory,
+and it requires the schema endpoint to be routed and reachable.
+**Decision:** render the payload into a
+`<script type="application/json" data-truss-payload>` block, which Truss v1.12.0
+reads instead of fetching.
+**Trade-off:** the page carries the schema in its HTML, so the response is
+larger. In exchange there is no second request, no endpoint dependency, and the
+filter and focus still run client side. Structure only, as ever.
+
+## Target Filament 5, and never Filament 4
+
+**Context:** Filament 5 requires Livewire 4, so an application on Filament 4 with
+Livewire 3 is two majors away, not one.
+**Decision:** Filament 5 and above.
+**Trade-off:** excludes applications that have not upgraded. Supporting 4 would
+be cheap now and wrong later, and the audience this package is being built to
+reach is on 5.
+
+## Authorization is parity with the Truss route, not a gate check
+
+**Context:** a Filament page never passes through Truss's `Authorize` middleware,
+and that middleware does more than run a gate: it refuses when `truss.enabled` is
+off, and it leaves `local` open unconditionally.
+**Decision:** `canAccess()` returns the same answer the Truss dashboard route
+would give the same user, in the same order, on top of whatever the panel
+requires.
+**Trade-off:** slightly more work than calling the gate, and it does not drift if
+the middleware grows a fourth condition. Checking only the gate would be both too
+permissive, rendering the schema in an application where Truss is switched off,
+and too strict, hiding the page in `local` where the dashboard is open. **It is
+also functionally required**: Truss's stylesheet, JavaScript and Mermaid are
+served from gated routes, so a viewer who fails the gate gets a page whose assets
+404 and a blank frame.
+
+## Re-drive Truss's frontend pipeline in v0.1, do not reimplement it
+
+**Context:** Truss's dashboard is client side end to end. Its selection pipeline
+reduces exclusions, the filter and the focus depth to a table subset and turns
+that into the Mermaid definition. The focus picker is an input to that pipeline,
+not decoration around it.
+**Decision:** v0.1 keeps Truss's JavaScript as the pipeline. Filament controls
+feed it; they do not replace it.
+**Trade-off:** the page depends on a frontend contract that is not yet public
+(see the next entry). Reimplementing selection and definition in PHP would mean a
+second renderer to keep in step with the first for ever, which is not what a v0.1
+is for.
+
+## Live with reproduced markup in v0.1, and ask upstream for a seam
+
+**Context:** Truss's container markup is not a public contract. Its entry point
+resolves 31 elements by id, 20 are reached without a null guard, and nine are
+guarded inconsistently, so a page providing only a canvas will not boot and the
+required set cannot be inferred by reading.
+**Decision:** v0.1 reproduces what it must and pins a Truss version. The seam
+worth having, a mount function owning the canvas, viewport, banners and popover
+and taking a payload, is requested upstream rather than invented here.
+**Trade-off:** a copy that upstream can change without warning, which is a real
+cost accepted deliberately and for a bounded time. **This package is the first
+real consumer of such a seam, so it should be designed from what is built here
+rather than in advance**, which is how the wrong API gets shipped.
+
+## Consume the panel's CSS custom properties, do not match a palette
+
+**Context:** Filament ships multiple first-party themes plus a compact modifier,
+and panels carry custom themes besides, so a hand-matched palette is wrong by the
+next release.
+**Decision:** read the panel's computed CSS custom properties in the browser and
+map them into Mermaid's theme variables at render time.
+**Trade-off:** a new small subsystem rather than a reuse of Truss's existing
+theming, which maps static config values to a server-rendered stylesheet and
+cannot follow a theme chosen at runtime. **The consequence to design for, not
+just predict:** Filament toggles dark mode client side with no page load, and
+Mermaid takes theme variables at initialisation and definition time rather than
+through the cascade, so the diagram must be re-initialised and re-rendered on the
+toggle rather than merely restyled.
+
+## Documentation splits between this README and trussphp.com
+
+**Context:** two packages, and a documentation site that already exists for the
+other one. Duplicating the guide in both places guarantees they drift; putting
+everything on the site leaves Packagist and the plugin directory rendering a
+README that does not say how to install the thing.
+**Decision:** **the README is the source of truth for installing and configuring
+the package**, because that is what Packagist and the directory render. **The
+site carries the narrative, the screenshots and the guide**, in a section of its
+own alongside the Laravel Truss documentation, and links back here for the
+commands. That section is maintained in step with this repository rather than
+written once.
+**Trade-off:** a second place to keep current at every release, in a repository
+with its own conventions. It follows an established pattern rather than opening a
+new one, since the existing integration guides on that site are the same shape,
+and it costs one sidebar entry. **The section appears once there is something
+installable**: the site builds against the latest release, so publishing a guide
+to an unreleased package would document something nobody can install.
+
+## Resource linking is v0.2, not v0.1
+
+**Context:** mapping each table to the Filament resource that manages it is the
+one feature no rival can copy without a panel, and its better half is showing the
+tables that have **no** resource, which is the part of the database the admin
+cannot see.
+**Decision:** not in v0.1. The first release is the diagram, the focus picker and
+the panel's styling.
+**Trade-off:** ships the less differentiated half first. Those three have to be
+right before anything else is worth adding, and v0.1 can then be dogfooded
+against a scratch panel pointed at a real schema, since an ER diagram needs a
+real schema and not real resources. **One thing to check before the v0.2 feature
+is ever screenshotted:** on a panel covering only part of its database, most
+tables will come back unmapped, which is either the feature demonstrating itself
+perfectly or a misleading first impression.
