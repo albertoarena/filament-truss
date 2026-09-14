@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AlbertoArena\FilamentTruss\Pages;
 
 use AlbertoArena\FilamentTruss\Access\TrussAccess;
+use AlbertoArena\Truss\Facades\Truss;
 use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
@@ -27,6 +28,37 @@ class SchemaPage extends Page
     public static function getNavigationLabel(): string
     {
         return __('filament-truss::schema.navigation_label');
+    }
+
+    /**
+     * Everything the diagram partial needs, assembled in PHP.
+     *
+     * **The payload is fetched here and handed to the browser in the page.**
+     * We are already inside the application, so asking it for its own schema
+     * over HTTP would be a round trip for an array we are holding.
+     *
+     * The config values are read from Truss's own config rather than from
+     * anything of ours, so a panel and the Truss dashboard draw the same
+     * diagram from the same settings.
+     *
+     * @return array<string, mixed>
+     */
+    public function getViewData(): array
+    {
+        return [
+            'payload' => Truss::payload(),
+            // One connection, and the switcher stays hidden. Truss reads an
+            // embedded payload once, on first load, and documents a connection
+            // switch on such a page as the host's to handle, since only the host
+            // can produce the other connection's payload. Offering a switcher
+            // that cannot switch would be worse than not offering one.
+            'connections' => [],
+            'typeLabels' => config('truss.diagram.type_labels'),
+            'warnAbove' => config('truss.large_schema.warn_above'),
+            'focusDepth' => config('truss.focus.default_depth'),
+            'minZoom' => config('truss.diagram.min_zoom'),
+            'flagTables' => config('truss.doctor.flag_tables', true),
+        ];
     }
 
     public function getTitle(): string
