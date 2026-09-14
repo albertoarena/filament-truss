@@ -21,10 +21,14 @@ ever exposed.
 
 ## Commands
 
-Placeholder until the package has a skeleton. Expected:
-
 - `composer test`: run the Pest suite
 - `composer lint` / `composer lint:fix`: Laravel Pint
+- `npm test`: run the Vitest suite over the two client-side files (`npm install`
+  first; there is no build step, so the tests read what the browser is served)
+
+Rendering and interaction in a real panel cannot be covered by either suite,
+because neither has a panel to render into. `docs/MANUAL-TESTS.md` is the
+checklist that stands in for a browser test, and it is a release gate.
 
 ## Conventions (always true)
 
@@ -80,6 +84,7 @@ Placeholder until the package has a skeleton. Expected:
 
 - Architecture and how the page gets its data: `docs/DESIGN.md`
 - Decision log, including what was rejected and why: `docs/DECISIONS.md`
+- What has to be checked by hand, and why: `docs/MANUAL-TESTS.md`
 
 This file should stay short enough to read in under a minute. If you are about to
 add detail, it probably belongs in `docs/` with a pointer added here.

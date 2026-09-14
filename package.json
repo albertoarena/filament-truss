@@ -1,0 +1,14 @@
+{
+  "name": "filament-truss",
+  "private": true,
+  "type": "module",
+  "description": "Client-side glue for albertoarena/filament-truss (no build step; the files under resources/dist are what the browser is served).",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.14.5",
+    "vitest": "^4.1.10"
+  }
+}

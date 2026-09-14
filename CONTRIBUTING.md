@@ -2,17 +2,17 @@
 
 Thanks for considering a contribution.
 
-**This is a scaffold.** The package has no skeleton yet: no `composer.json`, no
-`src/`, no test suite. The commands below are what they will be, not what runs
-today. Until a `v0.1.0` tag exists, the most useful contribution is a question or
-an issue rather than a pull request.
+**Nothing is released yet.** The package builds and its suites run, but there is
+no `v0.1.0` tag, so anything here can still change. Until there is one, the most
+useful contribution is a question or an issue rather than a pull request.
 
 ## Workflow
 
 1. Fork the repository and create a branch from `main`.
 2. Write a failing test first, then make it pass. Every change is test driven,
    and that is an ordering rule: the test must exist and fail before the code
-   that satisfies it.
+   that satisfies it. **This covers the stylesheet and the script as much as the
+   PHP**: they are behaviour, they are shipped, and Vitest tests them.
 3. Keep the public API stable. Anything in `src/` not marked `@internal` is a
    published contract.
 4. Keep `README.md` and `docs/` in sync whenever you change behaviour, config or
@@ -28,7 +28,17 @@ an issue rather than a pull request.
 ```bash
 composer test   # Pest
 composer lint   # Laravel Pint, code style
+npm test        # Vitest, the client-side files
 ```
+
+`npm install` first for that last one. There is no build step: the files under
+`resources/dist` are what the browser is served, and the Vitest suite reads them
+from disk for that reason.
+
+Rendering and interaction in a real panel are not covered by either suite, since
+neither has a Filament panel to render into. They are covered by the checklist in
+[`docs/MANUAL-TESTS.md`](docs/MANUAL-TESTS.md), which is worth a pass before any
+release.
 
 ## Conventions
 

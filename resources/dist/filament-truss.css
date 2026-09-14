@@ -12,6 +12,10 @@
  * to write, so that waits on a way to build a Truss theme scoped to a selector.
  *
  * Loaded after `truss.css`, which is the entire mechanism.
+ *
+ * Every rule but the `body` reset is scoped to the container, so this sheet
+ * cannot reach a panel page that has no diagram on it. Tested in
+ * tests/js/containment-css.test.js.
  */
 
 /* The grid and the page background belong to the diagram, not to the admin. */
@@ -42,6 +46,9 @@ body {
 }
 
 #truss-app.truss-embed #truss-viewport {
+    /* `min-height: 0` is the load-bearing half: a flex child defaults to
+       min-height auto, so a tall diagram would push the container past the
+       height set above instead of scrolling inside it. */
     flex: 1 1 auto;
     min-height: 0;
 }
