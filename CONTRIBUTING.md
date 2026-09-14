@@ -31,7 +31,8 @@ composer lint   # Laravel Pint, code style
 npm test        # Vitest, the client-side files
 ```
 
-`npm install` first for that last one. There is no build step: the files under
+`npm ci` first for that last one, which installs the locked tree rather than
+resolving a new one. There is no build step: the files under
 `resources/dist` are what the browser is served, and the Vitest suite reads them
 from disk for that reason.
 

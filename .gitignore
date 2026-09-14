@@ -2,7 +2,11 @@
 /vendor/
 composer.lock
 /node_modules/
-/package-lock.json
+
+# package-lock.json is deliberately NOT ignored, unlike composer.lock above. It
+# locks test tooling only, nothing a consumer of this package ever installs, and
+# committing it is what lets CI run `npm ci`: a resolved install rather than one
+# that picks a fresh transitive tree on every run.
 
 # Test / tooling caches
 /.phpunit.cache/

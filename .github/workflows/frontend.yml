@@ -14,18 +14,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Node 22 rather than 20: Vitest itself runs on 20, but its transitive CSS
-      # tooling asks for 20.19 and up, so the older major only installs with
-      # warnings.
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22'
+          node-version: '20'
+          cache: npm
 
-      # package-lock.json is gitignored, so there is no committed lockfile for
-      # npm ci; install from package.json instead.
+      # `npm ci` from a committed lockfile, which is the opposite of what the
+      # Composer side does and is deliberate: package-lock.json locks test
+      # tooling, nothing a consumer of this package installs.
+      #
+      # It is also what fixes this job. The first run resolved the tree from
+      # package.json alone and npm crashed in its own resolver
+      # ("Cannot read properties of null (reading 'edgesOut')"), identically on a
+      # re-run of the same commit, so it was the install and not a flake. An
+      # install that can pick a different transitive tree on every run is a poor
+      # thing to have between a push and a green tick anyway.
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       # The two client-side files this package ships: the dark mode bridge and
       # the containment stylesheet. There is no build step, so these tests read
