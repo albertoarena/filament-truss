@@ -1,0 +1,54 @@
+/*
+ * Takes back what Truss's stylesheet assumes it owns.
+ *
+ * Truss renders a standalone dashboard, so `truss.css` styles `body`: the
+ * blueprint grid, the page background, the base font. That is right for a page
+ * it owns and wrong inside a panel, where it paints the grid across the whole
+ * admin including behind the sidebar, and leaves the diagram with no height of
+ * its own to sit in.
+ *
+ * Everything here is layout and containment. Colour is a separate job: matching
+ * the panel's palette means driving Truss's theme variables, which are not ours
+ * to write, so that waits on a way to build a Truss theme scoped to a selector.
+ *
+ * Loaded after `truss.css`, which is the entire mechanism.
+ */
+
+/* The grid and the page background belong to the diagram, not to the admin. */
+body {
+    background: none;
+}
+
+#truss-app.truss-embed {
+    /* The grid Truss puts on `body`, scoped to where it was always meant to be.
+       Repeated here rather than inherited because the rule above removes it. */
+    background:
+        linear-gradient(var(--bp-grid-strong) 1px, transparent 1px) 0 0 / 96px 96px,
+        linear-gradient(90deg, var(--bp-grid-strong) 1px, transparent 1px) 0 0 / 96px 96px,
+        linear-gradient(var(--bp-grid) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px) 0 0 / 24px 24px,
+        var(--bp-bg);
+
+    /* A height of its own. Truss's viewport fills the window on a page it owns;
+       here it has to fit a panel that already spent space on chrome. */
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 12rem);
+    min-height: 28rem;
+    overflow: hidden;
+
+    border: 1px solid var(--bp-hair, rgba(0, 0, 0, 0.1));
+    border-radius: 0.75rem;
+}
+
+#truss-app.truss-embed #truss-viewport {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* The panel owns the theme, so Truss's own light/dark button would be a second
+   control disagreeing with the first. Hidden rather than removed: Truss reaches
+   for this element without checking whether it is there. */
+#truss-app.truss-embed #truss-theme-btn {
+    display: none;
+}

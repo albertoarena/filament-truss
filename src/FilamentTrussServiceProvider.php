@@ -21,6 +21,7 @@ class FilamentTrussServiceProvider extends PackageServiceProvider
         $package
             ->name('filament-truss')
             ->hasViews()
-            ->hasTranslations();
+            ->hasTranslations()
+            ->hasRoute('web');
     }
 }

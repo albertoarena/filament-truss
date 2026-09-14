@@ -28,6 +28,11 @@
 
 <link rel="stylesheet" href="{{ route('truss.asset', 'truss.css') }}">
 
+{{-- After truss.css, which is the whole mechanism: Truss styles `body` for a
+     page it owns, and this takes that back and contains the diagram in the
+     panel instead. --}}
+<link rel="stylesheet" href="{{ route('filament-truss.asset', 'filament-truss.css') }}">
+
 <script src="{{ config('truss.diagram.mermaid_url') ?: route('truss.asset', 'mermaid.min.js') }}"></script>
 
 <div
@@ -150,3 +155,6 @@
 </div>
 
 <script type="module" src="{{ route('truss.asset', 'truss.js') }}"></script>
+
+{{-- Joins Filament's dark class to the data attribute Truss reads. --}}
+<script src="{{ route('filament-truss.asset', 'filament-truss.js') }}"></script>

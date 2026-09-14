@@ -121,11 +121,17 @@ next release.
 variables at render time.** Every theme then works, including ones that do not
 exist yet, and dark mode follows the panel instead of being detected separately.
 
-**Dark mode is the first thing that will look broken**, and the mechanism matters
-more than the prediction: Filament toggles dark mode client side with no page
-load, while Mermaid takes its theme variables at initialisation and definition
-time rather than through the cascade. **So the diagram has to be re-initialised
-and re-rendered on the toggle**, not merely restyled by it.
+**Dark mode was predicted to be the first thing that broke, and the prediction
+was wrong in a useful way.** An earlier version of this section said the diagram
+would have to be re-initialised and re-rendered on a toggle, because Mermaid
+takes its theme variables at render time. **True of Mermaid, false of Truss:** it
+initialises with `theme: 'base'` and paints entity, row and line colours from CSS
+variables, deliberately, so that light and dark need no re-render.
+
+What was actually missing was smaller. Filament adds a `dark` class to `<html>`
+and Truss reads `data-theme` on the same element, so the two simply never met. A
+few lines mirror one onto the other, and Truss's own theme button is hidden so
+the panel is the only control. Done, and verified in a panel.
 
 Note that this is *not* Truss's existing theming machinery, which maps static
 config values to a server-rendered stylesheet. Reading computed properties off
