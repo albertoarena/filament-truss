@@ -1,0 +1,45 @@
+version: 2
+updates:
+  # Keep the SHA-pinned workflow actions current. Dependabot rewrites both the
+  # SHA and the trailing version comment when a new release lands.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  # Composer dependencies (runtime and dev). Minor and patch bumps are grouped
+  # into a single PR to keep the noise down; majors open on their own.
+  #
+  # A Truss bump is the one to read rather than merge on green: the page
+  # reproduces Truss's container markup, so an upstream change there is a change
+  # to this package's job.
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      composer-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Client-side test tooling (Vitest and its DOM environment).
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
