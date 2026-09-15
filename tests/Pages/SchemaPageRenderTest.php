@@ -49,6 +49,19 @@ it('needs no schema endpoint, because it never asks for one', function () {
     expect(renderDiagram())->not->toContain('data-schema-endpoint');
 });
 
+it('offers the exports Truss generates, because there is a server here', function () {
+    // The page embeds its payload, so it asks for no schema. That is not a
+    // reason to drop the export route as well: Markdown, DBML, JSON and CSV are
+    // generated in the application, the route is right there behind the same
+    // authorization this page matches, and without the attribute Truss decides
+    // it has no server and greys those four out. PNG and SVG are drawn from the
+    // DOM and were never affected, which is what makes the gap easy to miss.
+    $html = renderDiagram();
+
+    expect($html)->toContain('data-export-endpoint')
+        ->and($html)->toContain('/truss/export/__format__');
+});
+
 it('embeds structure and nothing else', function () {
     DB::table('authors')->insert(['name' => 'Ada Lovelace']);
 

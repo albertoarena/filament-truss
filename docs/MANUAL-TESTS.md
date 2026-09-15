@@ -86,6 +86,11 @@ that depend on markup this package reproduces rather than owns.
       indexes, and closes again.
 - [ ] Legend opens and closes.
 - [ ] Export: PNG and SVG both download and both open.
+- [ ] Export: Markdown, DBML, JSON and CSV are **offered, not greyed out**, and
+      each downloads. Greyed out means the page is not declaring the export
+      endpoint, so Truss believes it has no server. The four are generated in the
+      application, unlike PNG and SVG, which are drawn from the DOM and work
+      either way.
 - [ ] Diff: change a column in the database without re-baselining, reload, and
       the diff button appears with the change listed.
 - [ ] Health: the findings panel lists `truss:doctor` findings with a count on the
@@ -108,6 +113,18 @@ that depend on markup this package reproduces rather than owns.
       diagram still looks like part of the panel.
 - [ ] A custom panel theme: same question, and the honest one, since this is what
       most real panels run.
+- [ ] **Change the panel's primary colour** (`->colors(['primary' => Color::Teal])`)
+      and reload: the entity borders, primary key badges and focus ring follow it.
+      They are read from Filament's `--primary-*`, so no change here should be
+      needed for a colour this package has never heard of.
+- [ ] Nothing in the diagram is still wearing Truss's blueprint navy. A single
+      element that is means a token our palette does not cover, which the
+      reflection test should have caught, so say which one.
+- [ ] Text on entity rows and in the toolbar is comfortably readable in both
+      modes. The greys are mapped by step, and steps are a judgement that only a
+      pair of eyes settles.
+- [ ] Set a colour in `truss.theme` config and reload: `/truss` changes, the panel
+      page does not. That is deliberate, not a bug.
 
 ## 5. The promise, checked rather than assumed
 

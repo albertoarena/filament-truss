@@ -9,10 +9,16 @@ const css = readFileSync(
 
 const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
 
-/** The declarations of the first rule whose selector contains the needle. */
-function rule(needle) {
+/**
+ * The declarations of the rule with exactly this selector.
+ *
+ * Exact rather than a substring match, because the palette rules below are
+ * scoped to the same element as the layout rules and a loose match would happily
+ * assert against the wrong block.
+ */
+function rule(selector) {
   const match = [...withoutComments.matchAll(/([^{}]+)\{([^}]*)\}/g)].find(
-    ([, selector]) => selector.includes(needle)
+    ([, found]) => found.trim().replace(/\s+/g, ' ') === selector
   );
 
   return match ? match[2] : '';
@@ -58,7 +64,7 @@ describe('the containment stylesheet', () => {
     // `min-height: 0` is the load-bearing half. A flex child defaults to
     // min-height auto, so a tall diagram pushes the container past the height
     // set above instead of scrolling inside it.
-    const viewport = rule('#truss-viewport');
+    const viewport = rule('#truss-app.truss-embed #truss-viewport');
 
     expect(viewport).toMatch(/flex\s*:\s*1 1 auto/);
     expect(viewport).toMatch(/min-height\s*:\s*0/);
@@ -67,7 +73,15 @@ describe('the containment stylesheet', () => {
   it('hides the theme button, because the panel owns the theme', () => {
     // Hidden rather than removed from the markup: Truss reaches for this element
     // without checking whether it is there.
-    expect(rule('#truss-theme-btn')).toMatch(/display\s*:\s*none/);
+    expect(rule('#truss-app.truss-embed #truss-theme-btn')).toMatch(/display\s*:\s*none/);
+  });
+
+  it('leaves the palette to the rules below', () => {
+    // Layout and colour are separate jobs in this sheet. The layout rules exist
+    // so the diagram fits a panel; the palette rules exist so it looks like one.
+    const embed = rule('#truss-app.truss-embed');
+
+    expect(embed).not.toContain('--bp-entity-bg');
   });
 
   it('changes nothing on a panel page that has no diagram', () => {
@@ -79,5 +93,42 @@ describe('the containment stylesheet', () => {
     );
 
     expect(unscoped).toEqual([]);
+  });
+});
+
+describe('the panel palette', () => {
+  // Truss repaints the Mermaid output from these variables with `!important`
+  // rules of its own, which is why a diagram follows a theme change with no
+  // re-render. Redefining them on the container is therefore the whole
+  // mechanism: no JavaScript, no second renderer, no palette to keep in step.
+  const light = rule('.truss-embed');
+  const dark = rule(':root[data-theme="dark"] .truss-embed');
+
+  it('takes its colours from the panel instead of matching them', () => {
+    // Filament emits its own palette as custom properties, generated from the
+    // panel's colour configuration, so a custom panel colour arrives here for
+    // free and a theme that does not exist yet still works.
+    expect(light).toContain('var(--primary-');
+    expect(light).toContain('var(--gray-');
+  });
+
+  it('gives the accent to the panel primary rather than to a grey', () => {
+    // The accent is what a person reads as "this is a Filament page": headings,
+    // primary key badges, the focus ring.
+    expect(light).toMatch(/--bp-ink:\s*var\(--primary-/);
+    expect(dark).toMatch(/--bp-ink:\s*var\(--primary-/);
+  });
+
+  it('answers for dark as well as light', () => {
+    // The bridge sets data-theme from Filament's class, so this is the block
+    // that actually runs when the panel is dark.
+    expect(dark).toContain('var(--gray-');
+  });
+
+  it('names no colour of its own', () => {
+    // A hex literal here would be a palette this package invented, which is the
+    // thing that is wrong by the next Filament release.
+    expect(light).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+    expect(dark).not.toMatch(/#[0-9a-f]{3,8}\b/i);
   });
 });

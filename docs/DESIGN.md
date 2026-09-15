@@ -117,9 +117,30 @@ first-party themes plus a compact modifier, and panels carry custom themes
 besides, so matching a palette by hand is a moving target that is wrong by the
 next release.
 
-**Read the panel's own CSS custom properties and map them into Mermaid's theme
-variables at render time.** Every theme then works, including ones that do not
-exist yet, and dark mode follows the panel instead of being detected separately.
+**Read the panel's own CSS custom properties and map them into Truss's theme
+variables.** Every theme then works, including ones that do not exist yet, and
+dark mode follows the panel instead of being detected separately.
+
+**Built, and it turned out to be pure CSS.** Filament emits its scales
+(`--primary-50` through `--primary-950`, the same for `--gray-*`) as custom
+properties in the page, generated from the panel's own colour configuration.
+Truss repaints the Mermaid output from its own variables, with `!important` rules
+that beat the fills Mermaid writes as attributes. So redefining Truss's variables
+on the container re-skins chrome and diagram together, in both modes, with no
+JavaScript and no re-render. A panel with a custom primary colour arrives themed
+for free.
+
+**The cost is the same one the markup carries.** Truss's public contract is eight
+semantic knobs (`accent`, `surface`, `muted` and so on) and it says the `--bp-*`
+tokens behind them are private. Those knobs are config, read on the server, and a
+panel picks its theme in the browser, so they cannot answer this question and the
+private tokens are driven instead. `tests/Theme/PaletteTokensTest.php` reads the
+knob map out of Truss by reflection and fails when our mapping stops covering it,
+which is what keeps a rename from quietly leaving the diagram half-painted.
+
+**A theme configured in `truss.theme` is not applied here**, deliberately. It
+themes the standalone dashboard, which is a page of its own; inside a panel the
+panel is the authority, which is the whole point of this section.
 
 **Dark mode was predicted to be the first thing that broke, and the prediction
 was wrong in a useful way.** An earlier version of this section said the diagram

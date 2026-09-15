@@ -150,6 +150,41 @@ about the other, so a light panel could hold a dark diagram. A few lines mirror
 one to the other, and Truss's own theme button is hidden so there is no second
 control to disagree with the panel.
 
+## Drive Truss's private theme tokens, not its public knobs
+
+**Context:** Truss has a documented theming API, eight semantic knobs under
+`truss.theme` that it turns into a stylesheet. It is the obvious thing to reach
+for and it cannot do this job: the knobs are config, resolved on the server,
+once, and a Filament panel decides its palette in the browser, per panel, and
+changes it at runtime with a toggle. Behind those knobs are the `--bp-*` custom
+properties Truss calls private.
+**Decision:** map Filament's own scales onto the private tokens, scoped to the
+diagram's container, in light and dark. A theme set in `truss.theme` is left to
+the standalone dashboard and is not applied to the panel page.
+**Trade-off:** a second dependency on something upstream does not promise, next
+to the reproduced markup. It is guarded the same way, by a test that reads the
+knob map out of Truss and fails when the mapping stops covering it, and it buys
+the thing the knobs cannot buy: a diagram that follows the panel it is in,
+including a custom primary colour and a theme that does not exist yet. **The ask
+that would retire this** is knob-level custom properties in Truss, so a host can
+theme from CSS rather than only from config. That belongs upstream, raised there,
+in a session working in that repository.
+
+## Keep the export endpoint, even though the schema endpoint is dropped
+
+**Context:** the page embeds its payload, so it declares no schema endpoint. The
+export endpoint was dropped along with it, which looked consistent and was not:
+Truss reads the absent attribute as "this page has no server" and greys out
+Markdown, DBML, JSON and CSV. PNG and SVG kept working because they are drawn
+from the DOM, which is exactly what made the gap easy to miss.
+**Decision:** keep `data-export-endpoint`. There is a server here, the route is
+the same one the dashboard uses, and this page already answers the same
+authorization question that route asks.
+**Trade-off:** those four exports are a server round trip that re-reads the
+schema, where the diagram itself costs none. That is what they are on the
+dashboard too, and the alternative is a panel that silently offers less than the
+page it is at parity with.
+
 ## Documentation splits between this README and trussphp.com
 
 **Context:** two packages, and a documentation site that already exists for the

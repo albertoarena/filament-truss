@@ -7,9 +7,8 @@
  * admin including behind the sidebar, and leaves the diagram with no height of
  * its own to sit in.
  *
- * Everything here is layout and containment. Colour is a separate job: matching
- * the panel's palette means driving Truss's theme variables, which are not ours
- * to write, so that waits on a way to build a Truss theme scoped to a selector.
+ * Two jobs, kept apart: the rules above the palette section fit the diagram into
+ * a panel, and the palette section makes it look like one.
  *
  * Loaded after `truss.css`, which is the entire mechanism.
  *
@@ -41,7 +40,7 @@ body {
     min-height: 28rem;
     overflow: hidden;
 
-    border: 1px solid var(--bp-hair, rgba(0, 0, 0, 0.1));
+    border: 1px solid var(--bp-hair);
     border-radius: 0.75rem;
 }
 
@@ -58,4 +57,93 @@ body {
    for this element without checking whether it is there. */
 #truss-app.truss-embed #truss-theme-btn {
     display: none;
+}
+
+/*
+ * The palette.
+ *
+ * Truss repaints the Mermaid output from its own CSS variables, with
+ * `!important` rules that beat the fills Mermaid writes as attributes. That is
+ * why its diagram follows a light/dark change with no re-render, and it is also
+ * why this section is all that is needed: redefine the variables on the
+ * container and the whole thing, chrome and diagram alike, is wearing the
+ * panel's colours. No JavaScript, no second renderer, no palette to keep in step
+ * with Filament's.
+ *
+ * The values come from Filament, which emits its scales (`--primary-*`,
+ * `--gray-*`) as custom properties generated from the panel's own colour
+ * configuration. A panel with a custom primary arrives here for free, and so
+ * does a theme that does not exist yet. No fallbacks: this sheet is served to
+ * one page, inside a panel that always emits these.
+ *
+ * **These `--bp-*` names are Truss internals**, and it says so: its eight
+ * semantic knobs are the public contract. Those knobs are config, read on the
+ * server, and a panel decides its theme in the browser, so they cannot answer
+ * this question. tests/Theme/PaletteTokensTest.php reads the knob map out of
+ * Truss and fails when this list stops covering it.
+ */
+.truss-embed {
+    --bp-ink: var(--primary-600);
+    --bp-focus-border: var(--primary-600);
+    --bp-cyan: var(--primary-500);
+
+    --bp-bg: var(--gray-100);
+    --bp-edge-bg: var(--gray-100);
+
+    --bp-panel: var(--gray-50);
+    --bp-entity-bg: var(--gray-50);
+    --bp-row-odd: var(--gray-50);
+    --bp-field: var(--gray-50);
+    --bp-row-even: var(--gray-100);
+
+    --bp-fg: var(--gray-950);
+    --bp-entity-text: var(--gray-950);
+    --bp-muted: var(--gray-500);
+    --bp-rel: var(--gray-400);
+    --bp-edge: var(--gray-500);
+
+    --bp-entity-border: var(--gray-400);
+    --bp-hair: var(--gray-200);
+    --bp-panel-line: var(--gray-200);
+    --bp-field-line: var(--gray-300);
+
+    /* Not knobs of Truss's own: the blueprint grid, which is drawn by the
+       container rule above rather than by Truss. Mixed from the panel's grey so
+       it reads as texture and never as a table border. */
+    --bp-grid: color-mix(in oklch, var(--gray-400) 14%, transparent);
+    --bp-grid-strong: color-mix(in oklch, var(--gray-400) 24%, transparent);
+}
+
+/*
+ * Dark, on the attribute the bridge script mirrors from Filament's own class.
+ * Filament's greys run one way from 50 to 950, so dark is a different set of
+ * steps rather than a different scale.
+ */
+:root[data-theme="dark"] .truss-embed {
+    --bp-ink: var(--primary-400);
+    --bp-focus-border: var(--primary-400);
+    --bp-cyan: var(--primary-300);
+
+    --bp-bg: var(--gray-950);
+    --bp-edge-bg: var(--gray-950);
+
+    --bp-panel: var(--gray-900);
+    --bp-entity-bg: var(--gray-900);
+    --bp-row-odd: var(--gray-900);
+    --bp-field: var(--gray-900);
+    --bp-row-even: var(--gray-800);
+
+    --bp-fg: var(--gray-100);
+    --bp-entity-text: var(--gray-100);
+    --bp-muted: var(--gray-400);
+    --bp-rel: var(--gray-500);
+    --bp-edge: var(--gray-400);
+
+    --bp-entity-border: var(--gray-600);
+    --bp-hair: var(--gray-800);
+    --bp-panel-line: var(--gray-800);
+    --bp-field-line: var(--gray-700);
+
+    --bp-grid: color-mix(in oklch, var(--gray-400) 10%, transparent);
+    --bp-grid-strong: color-mix(in oklch, var(--gray-400) 16%, transparent);
 }

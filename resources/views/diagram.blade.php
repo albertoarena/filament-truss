@@ -17,7 +17,9 @@
 
     The one deliberate difference from upstream: there is no
     `data-schema-endpoint`, because the payload is embedded below and no
-    request is ever made.
+    request is ever made. The export endpoint is a different matter and is kept:
+    Markdown, DBML, JSON and CSV are generated in the application, not in the
+    browser, and Truss greys them out when the attribute is absent.
 
     Structure only. The payload carries tables, columns, indexes and foreign
     keys, and never row data.
@@ -38,6 +40,7 @@
 <div
     id="truss-app"
     class="truss-embed"
+    data-export-endpoint="{{ route('truss.export', ['format' => '__format__']) }}"
     data-connections='@json($connections)'
     data-type-labels="{{ $typeLabels }}"
     data-warn-above="{{ $warnAbove }}"
