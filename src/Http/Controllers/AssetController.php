@@ -37,11 +37,12 @@ class AssetController
 
         return new Response((string) file_get_contents($path), 200, [
             'Content-Type' => self::FILES[$file].'; charset=UTF-8',
-            // Fixed for a given installed version, so revalidating on every
-            // panel page load would spend a request on bytes that cannot have
-            // changed. A package upgrade changes the bytes and the cache with
-            // them, since Composer replaces the file.
-            'Cache-Control' => 'public, max-age=86400',
+            // A year, and immutable, because the page asks for these through
+            // {@see Asset}, which puts the file's modification time in the query.
+            // The URL therefore changes whenever the bytes do, and that is what
+            // makes a long cache safe: an upgrade is a different URL rather than
+            // a stale copy of the old one.
+            'Cache-Control' => 'public, max-age=31536000, immutable',
         ]);
     }
 }

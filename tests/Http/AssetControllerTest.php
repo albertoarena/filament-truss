@@ -34,3 +34,13 @@ it('lets a browser cache what cannot change between deploys', function () {
 
     expect($response->headers->get('cache-control'))->toContain('max-age');
 });
+
+it('caches for a year, because the URL changes when the bytes do', function () {
+    // Safe only because the page asks for a versioned URL (see Asset). Without
+    // that, a long cache is how an upgraded package keeps serving last week's
+    // stylesheet against this week's markup.
+    $response = $this->get(route('filament-truss.asset', 'filament-truss.css'));
+
+    expect($response->headers->get('cache-control'))->toContain('max-age=31536000')
+        ->and($response->headers->get('cache-control'))->toContain('immutable');
+});

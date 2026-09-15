@@ -38,3 +38,12 @@ it('loads the dark-mode bridge', function () {
     // something joining them the panel and the diagram disagree about dark mode.
     expect(diagramHtml())->toContain('filament-truss.js');
 });
+
+it('asks for its own files by a URL that moves when they do', function () {
+    // Otherwise the long cache on those responses outlives the upgrade that
+    // changed them, and the panel renders new markup with the old stylesheet.
+    $html = diagramHtml();
+
+    expect($html)->toMatch('/filament-truss\.css\?v=[a-z0-9]+/')
+        ->and($html)->toMatch('/filament-truss\.js\?v=[a-z0-9]+/');
+});

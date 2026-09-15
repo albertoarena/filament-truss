@@ -25,6 +25,8 @@
     keys, and never row data.
 --}}
 
+@use('AlbertoArena\FilamentTruss\Http\Asset')
+
 <link rel="preload" as="font" type="font/woff2"
       href="{{ route('truss.asset', 'ibm-plex-mono-400.woff2') }}" crossorigin>
 
@@ -33,7 +35,7 @@
 {{-- After truss.css, which is the whole mechanism: Truss styles `body` for a
      page it owns, and this takes that back and contains the diagram in the
      panel instead. --}}
-<link rel="stylesheet" href="{{ route('filament-truss.asset', 'filament-truss.css') }}">
+<link rel="stylesheet" href="{{ Asset::url('filament-truss.css') }}">
 
 <script src="{{ config('truss.diagram.mermaid_url') ?: route('truss.asset', 'mermaid.min.js') }}"></script>
 
@@ -160,4 +162,4 @@
 <script type="module" src="{{ route('truss.asset', 'truss.js') }}"></script>
 
 {{-- Joins Filament's dark class to the data attribute Truss reads. --}}
-<script src="{{ route('filament-truss.asset', 'filament-truss.js') }}"></script>
+<script src="{{ Asset::url('filament-truss.js') }}"></script>
