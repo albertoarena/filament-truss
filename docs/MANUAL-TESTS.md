@@ -109,6 +109,11 @@ that depend on markup this package reproduces rather than owns.
       preference and disagrees with the panel.
 - [ ] Load the page directly in dark mode (not toggled into it). The diagram is
       dark from the first paint rather than starting light.
+- [ ] **The page around the diagram is the panel's own background in dark**, not
+      a white slab. This sheet repaints `body`, because Truss's unlayered rule
+      beats Filament's layered one and there is nothing to fall back to. It is
+      invisible in light, where the canvas is white anyway, so it has to be
+      checked in dark.
 - [ ] A first-party theme that is not the default, plus the compact modifier: the
       diagram still looks like part of the panel.
 - [ ] A custom panel theme: same question, and the honest one, since this is what

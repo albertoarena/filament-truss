@@ -17,9 +17,30 @@
  * tests/js/containment-css.test.js.
  */
 
-/* The grid and the page background belong to the diagram, not to the admin. */
+/*
+ * The grid belongs to the diagram, not to the admin, and the page background
+ * belongs to Filament.
+ *
+ * Both halves are needed, and the second one is the subtle half. Filament paints
+ * the page with `.fi-body`, inside a Tailwind layer, and an unlayered rule beats
+ * a layered one however weak its selector: Truss's plain `body` rule was already
+ * winning that contest before this sheet existed. So there is nothing to fall
+ * back to. Cancelling Truss's background leaves the page with none at all, which
+ * is invisible against a white canvas in light mode and a white slab around the
+ * diagram in dark.
+ *
+ * The values are Filament's own, from the same custom properties `.fi-body`
+ * reads, so this repaints what the panel would have painted.
+ */
 body {
-    background: none;
+    background: var(--gray-50);
+}
+
+/* Filament's own class rather than the `data-theme` attribute the palette below
+   uses. This is the panel's background, not Truss's, so it follows the panel's
+   own state and is right on the first paint, before the bridge script runs. */
+:root.dark body {
+    background: var(--gray-950);
 }
 
 #truss-app.truss-embed {

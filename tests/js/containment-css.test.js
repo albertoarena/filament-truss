@@ -35,7 +35,24 @@ describe('the containment stylesheet', () => {
   it('hands the page background back to the panel', () => {
     // Truss styles `body` because it renders a page it owns. Inside a panel that
     // paints the blueprint grid across the whole admin, sidebar included.
-    expect(rule('body')).toMatch(/background\s*:\s*none/);
+    //
+    // **Repainting it is not optional, and cancelling it is not enough.**
+    // Filament's own `.fi-body` background lives inside a Tailwind layer, and an
+    // unlayered rule beats a layered one whatever its specificity, so Truss's
+    // plain `body` rule was already winning before this sheet existed. Anything
+    // here that merely removes it leaves the page with no background at all:
+    // invisible in light, where the canvas is white anyway, and a white slab
+    // around the diagram in dark.
+    expect(rule('body')).toMatch(/background\s*:\s*var\(--gray-50\)/);
+    expect(rule(':root.dark body')).toMatch(/background\s*:\s*var\(--gray-950\)/);
+  });
+
+  it('follows the panel class for that, not the mirrored attribute', () => {
+    // The palette below keys off `data-theme`, which is Truss's state and is set
+    // by the bridge script. The page background is Filament's own business, so it
+    // keys off Filament's own class: correct on first paint, with no dependency
+    // on our JavaScript having run.
+    expect(selectors()).toContain(':root.dark body');
   });
 
   it('repaints the grid where the grid belongs', () => {
@@ -89,7 +106,7 @@ describe('the containment stylesheet', () => {
     // may own elements of its own. Everything except the `body` reset stays
     // scoped to the container, so nothing here can reach a page without one.
     const unscoped = selectors().filter(
-      (selector) => selector !== 'body' && ! selector.includes('.truss-embed')
+      (selector) => ! /(^|\s)body$/.test(selector) && ! selector.includes('.truss-embed')
     );
 
     expect(unscoped).toEqual([]);
