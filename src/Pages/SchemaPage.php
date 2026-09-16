@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace AlbertoArena\FilamentTruss\Pages;
 
 use AlbertoArena\FilamentTruss\Access\TrussAccess;
+use AlbertoArena\FilamentTruss\FilamentTrussPlugin;
 use AlbertoArena\Truss\Facades\Truss;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -64,6 +66,61 @@ class SchemaPage extends Page
     public function getTitle(): string
     {
         return __('filament-truss::schema.title');
+    }
+
+    /**
+     * What the diagram is, said before anyone has to work it out.
+     *
+     * A panel user arriving here has usually not heard of Truss, and an ER
+     * diagram with no caption is a picture rather than an answer. It also
+     * carries the promise, where the person who would most want to know it is
+     * actually looking.
+     */
+    public function getSubheading(): string
+    {
+        return __('filament-truss::schema.subheading');
+    }
+
+    /**
+     * The link to the project, when the panel has not turned it off.
+     *
+     * @return array<Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        if (! $this->plugin()?->hasDocumentationLink()) {
+            return [];
+        }
+
+        return [
+            Action::make('documentation')
+                ->label(__('filament-truss::schema.documentation_label'))
+                ->icon('heroicon-o-arrow-top-right-on-square')
+                ->color('gray')
+                ->link()
+                ->url(FilamentTrussPlugin::PROJECT_URL)
+                ->openUrlInNewTab(),
+        ];
+    }
+
+    /**
+     * This package's plugin on the panel being rendered, if there is one.
+     *
+     * Null rather than a throw: the diagram partial is rendered on its own in
+     * the suite, with no panel around it, and a page that cannot find its own
+     * plugin should show one thing less rather than fail.
+     */
+    private function plugin(): ?FilamentTrussPlugin
+    {
+        $panel = Filament::getCurrentPanel();
+
+        if (! $panel?->hasPlugin('filament-truss')) {
+            return null;
+        }
+
+        $plugin = $panel->getPlugin('filament-truss');
+
+        return $plugin instanceof FilamentTrussPlugin ? $plugin : null;
     }
 
     /**

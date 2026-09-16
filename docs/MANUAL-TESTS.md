@@ -160,6 +160,20 @@ from it fails silently in the browser rather than loudly in the suite.
       because they are monospaced.
 - [ ] Change the panel's primary and reload: the focus ring and the ticked
       checkbox follow it, because both read Filament's own properties.
+- [ ] The toolbar has room above and below the controls, and **the health
+      badge is whole**. The bar is a flex child and was shrinking under the
+      diagram, which cropped the badge against the container's own clipped
+      edge, so a short bar is the symptom to watch for if it returns.
+- [ ] Focus a table: its fill is **white over the panel's grey**, like a Filament
+      card, and never Truss's pale cyan. The primary border is what says it is
+      focused.
+- [ ] Open the export menu and hover an item: the highlight is a panel grey, not
+      a pale blue. An unavailable export does **not** light up on hover.
+- [ ] The heading carries a subheading saying the diagram is read live and is
+      structure only, and a **Documentation** link sits opposite it, opening in a
+      new tab.
+- [ ] Register the plugin with `->documentationLink(false)`: the link is gone and
+      the subheading stays.
 - [ ] **Dark operating system, light panel: the diagram is light.** This is the
       whole point of the bridge. Without it Truss falls back to the machine's
       preference and disagrees with the panel.

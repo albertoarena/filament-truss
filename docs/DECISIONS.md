@@ -282,3 +282,23 @@ margin that assumes the padding of a Filament container that is not there.
 **Keyed to `ft-controls` rather than to `.truss-toolbar` on purpose.** The
 toolbar markup is reproduced in this package, so hanging our chrome on a class of
 our own means an upstream rename costs the Blade and not the stylesheet as well.
+
+## The project link is on by default, and removable in one call
+
+**Context:** the page carries a subheading saying where the diagram comes from
+and what it will never show, and a link to the project beside it. The subheading
+is for whoever is looking at the panel; the link is for the developer who
+installed it.
+**Decision:** both ship on. The link is a header action controlled by
+`FilamentTrussPlugin::make()->documentationLink(false)`.
+**Trade-off:** one more line of plugin API, and a default that puts our name in
+someone else's admin. **A plugin that links to its own repository from a panel it
+does not own, with no way to remove it, is a plugin with a billboard in it**, and
+the panel's owner has to be able to take it down without forking the page. On by
+default because it is genuinely where the person looking at this page goes next,
+and because a plugin nobody can find the documentation for is worse than one that
+says where it is.
+
+**The subheading is not switchable**, deliberately. It is one sentence, it names
+the promise in the place where the person who would most want to know it is
+looking, and a panel that wants different words can translate it.

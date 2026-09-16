@@ -22,9 +22,34 @@ use Filament\Panel;
  */
 class FilamentTrussPlugin implements Plugin
 {
+    /** Where the package lives, and where its documentation is kept. */
+    public const PROJECT_URL = 'https://github.com/albertoarena/filament-truss';
+
+    protected bool $hasDocumentationLink = true;
+
     public function getId(): string
     {
         return 'filament-truss';
+    }
+
+    /**
+     * Whether the page offers a link to the project.
+     *
+     * On by default, because it is where a developer looking at this page goes
+     * next. Off in one call, because a plugin that puts a permanent link to its
+     * own repository in someone else's admin panel and gives them no way to
+     * remove it is a plugin with a billboard in it.
+     */
+    public function documentationLink(bool $condition = true): static
+    {
+        $this->hasDocumentationLink = $condition;
+
+        return $this;
+    }
+
+    public function hasDocumentationLink(): bool
+    {
+        return $this->hasDocumentationLink;
     }
 
     public static function make(): static

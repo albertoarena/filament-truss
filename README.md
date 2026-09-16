@@ -62,6 +62,16 @@ So the toggle being absent in production is a setting rather than a bug, and
 excluding a table to keep it off a shared panel keeps working: there is no query
 parameter and no plugin option that puts it back.
 
+## Configuration
+
+There is nothing to configure for the diagram itself: it follows Truss's config
+and the panel's theme. The one option is the link to this project in the page
+header, which is on by default and off in one call:
+
+```php
+$panel->plugin(FilamentTrussPlugin::make()->documentationLink(false));
+```
+
 ## Documentation
 
 - [`docs/DESIGN.md`](docs/DESIGN.md): architecture, and how the page gets its data
