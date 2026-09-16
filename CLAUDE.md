@@ -15,7 +15,7 @@ ever exposed.
 - PHP 8.2+ (matching Truss, which matches Laravel 12)
 - Laravel 12+
 - Filament 5+ (**never target Filament 4**, see `docs/DECISIONS.md`)
-- `albertoarena/laravel-truss` v1.12.0+ for the schema, the diff and the findings
+- `albertoarena/laravel-truss` v1.13.0+ for the schema, the diff and the findings
 - Pest for testing
 - Mermaid for diagram rendering, which comes from Truss rather than from here
 

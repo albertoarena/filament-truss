@@ -62,6 +62,41 @@ it('offers the exports Truss generates, because there is a server here', functio
         ->and($html)->toContain('/truss/export/__format__');
 });
 
+it('hands on the exclusion count, which the footer reads to say how much is shown', function () {
+    // Truss v1.13.0 reports how many tables `excluded_tables` removed, and its
+    // footer turns that into "8 of 17 tables" rather than presenting a filtered
+    // diagram as the whole schema. The count is arithmetic done upstream and the
+    // payload is handed on whole, so there is nothing here to get right and
+    // exactly one way to get it wrong: trimming the payload to make the page
+    // smaller. A count, never the names.
+    config()->set('truss.excluded_tables', ['books']);
+    config()->set('truss.reveal_excluded', false);
+
+    $html = renderDiagram();
+
+    expect($html)->toContain('"excluded":{"count":1}')
+        ->and($html)->toContain('"authors"')
+        ->and($html)->not->toContain('"books"');
+});
+
+it('sends the hidden tables only where Truss config allows it', function () {
+    // The other half of the same switch, and the reason the toggle in the
+    // toolbar is Truss's rather than ours. `reveal_excluded` is the operator's
+    // decision, made in Truss config, and this page neither asks nor overrides:
+    // it renders what the facade returns. Set explicitly in both tests because
+    // the default is resolved from `APP_ENV` when config loads, so leaving it
+    // ambient makes the pair pass or fail on where they are run.
+    config()->set('truss.excluded_tables', ['books']);
+    config()->set('truss.reveal_excluded', true);
+
+    $html = renderDiagram();
+
+    // Marked, so Truss's frontend holds it back until the viewer asks. Still
+    // structure: a name, its columns and its keys, and no rows.
+    expect($html)->toContain('"excluded":true')
+        ->and($html)->toContain('"books"');
+});
+
 it('embeds structure and nothing else', function () {
     DB::table('authors')->insert(['name' => 'Ada Lovelace']);
 

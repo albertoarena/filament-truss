@@ -219,3 +219,31 @@ real schema and not real resources. **One thing to check before the v0.2 feature
 is ever screenshotted:** on a panel covering only part of its database, most
 tables will come back unmapped, which is either the feature demonstrating itself
 perfectly or a misleading first impression.
+
+## Hiding and revealing tables is Truss's, and this package adds no control
+
+**Context:** a panel on a 17 table database draws 8 of them, because Truss
+excludes framework plumbing by config, and nothing on the page said so. The
+plugin-shaped answer was an option here, `->revealExcludedTables()`, so an
+application could decide per panel. Truss v1.13.0 answered it first and answered
+it differently: the payload always carries `excluded.count`, the footer reads
+`8 of 17 tables`, and a **Show hidden tables** toggle draws the hidden ones muted
+when `truss.reveal_excluded` lets them leave the server at all (on in local, off
+elsewhere, matching `enabled` and the `viewTruss` gate, and with no query
+parameter, so the decision stays the operator's and never the viewer's).
+**Decision:** take that mechanism whole. This package reproduces the two elements
+the toggle needs, `truss-show-excluded-field` and `truss-show-excluded`, and adds
+nothing beside them: no plugin method, no config key of our own, no page action,
+no override of what the application configured.
+**Trade-off:** a panel cannot reveal tables `reveal_excluded` keeps on the
+server, and an application that wants the toggle outside `local` says so in
+Truss's config rather than in the plugin registration. That is the point and not
+the price. An option here would be a second switch answering a question Truss
+already answers, and the two would eventually disagree: someone who excluded a
+table to keep it off a shared panel would find a plugin flag putting it back.
+**It is the authorization-parity rule applied to visibility**, which is the same
+argument about the same boundary, in a different place.
+
+**What this package still owes the feature** is the markup and the manual check,
+because the toggle is upstream's and the container is ours. The drift guard is
+what makes that an upgrade-time failure rather than a silent one.

@@ -99,6 +99,40 @@ that depend on markup this package reproduces rather than owns.
 - [ ] The connections control stays hidden. One connection is rendered here on
       purpose: the payload is embedded once, so a switcher could not switch.
 
+## 3a. Hidden tables, which are Truss's to hide and to reveal
+
+This whole feature belongs to Truss (v1.13.0). What is being checked here is that
+the panel presents it, since the container is reproduced and an element missing
+from it fails silently in the browser rather than loudly in the suite.
+
+- [ ] The footer reads **`8 of 17 tables`** and not `8 tables`, on a panel whose
+      database has more tables than `truss.excluded_tables` leaves drawable. This
+      is the whole point: a filtered diagram must not present itself as the whole
+      schema.
+- [ ] Filter or focus to narrow the view: the footer follows (`2 of 8`), and
+      still shows **two numbers, never three**.
+- [ ] A database with nothing excluded reads a plain `17 tables`.
+- [ ] **`truss.reveal_excluded` true** (the default in `local`): the **Show
+      hidden tables** checkbox is in the more-controls group, after Laravel
+      types. Tick it and the hidden tables are drawn **muted**; untick it and
+      they go away again.
+- [ ] Revealed tables are muted enough to read as guests in **both** light and
+      dark, against the panel's own palette. They carry no change marks and no
+      health badges by design, because the diff and the doctor ran on the
+      filtered set, so muted is what says "not checked" rather than "checked and
+      clean". If they look like ordinary tables, that is the bug.
+- [ ] With the toggle on, a revealed table appears in the **focus picker** and in
+      the filter, and behaves like any other table while it is on screen.
+- [ ] **`truss.reveal_excluded` false** (the default outside `local`): the
+      checkbox is **absent**, not present and inert, and the footer still reads
+      `8 of 17`. View source and confirm the hidden tables are **not in the
+      payload at all**. A count left the server; names did not.
+- [ ] There is no way to reveal them from the panel: no plugin option, no page
+      action, and **no query parameter**. Try `?show_excluded=1` and confirm it
+      does nothing. Revealing is the operator's decision in Truss config, which
+      is what makes excluding a table to keep it off a shared panel worth
+      relying on.
+
 ## 4. The theme, which is the panel's
 
 - [ ] Toggle the panel between light and dark: the diagram follows immediately,

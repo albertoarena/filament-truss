@@ -25,6 +25,8 @@ Truss v1.12.0 added `Truss::payload(?string $connection = null)`, which returns
 the array the Truss dashboard runs on, in process, with no HTTP request:
 
 - the snapshot, with config exclusions already applied
+- `excluded.count`, how many tables those exclusions removed, always present and
+  never the names (v1.13.0)
 - the structural diff against the recorded baseline
 - the `truss:doctor` findings
 - flags saying the cache store or the baseline disk could not be read
@@ -57,6 +59,30 @@ natively, keep the canvas" cuts across the code rather than along it.
 **v0.1 re-drives that pipeline rather than reimplementing it.** Reimplementing
 selection and definition in PHP would mean a second renderer to keep in step with
 the first, for ever.
+
+## What the exclusion list hides, and who may reveal it
+
+Truss removes framework plumbing from the diagram by config, so a panel sitting
+on 17 tables draws 8 of them. Until v1.13.0 nothing on the page said so, which
+reads as Truss failing to see the other nine rather than as a setting doing its
+job.
+
+**The whole mechanism is Truss's and this package supplies only the markup.** The
+footer says `8 of 17 tables` because `excluded.count` is in the payload; the
+**Show hidden tables** toggle draws the hidden ones muted, and they reach the
+browser at all only where `truss.reveal_excluded` allows it (on in `local`, off
+elsewhere, matching `truss.enabled` and the `viewTruss` gate). There is no query
+parameter, so revealing stays the operator's decision and never the viewer's.
+
+**This package adds no control of its own**, deliberately. See `DECISIONS.md`.
+What it owes the feature is the two elements the toggle needs in the reproduced
+container, which is the same standing cost the rest of that container carries and
+is caught by the same drift guard.
+
+Revealed tables carry no change marks and no findings, because the diff and the
+doctor have already run on the filtered set. That is why Truss draws them muted,
+and it is worth knowing here: a revealed table showing nothing wrong has not been
+checked, rather than checked and found clean.
 
 ## The open problem, and it is the one to solve first
 

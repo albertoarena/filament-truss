@@ -78,6 +78,15 @@
             <label class="truss-field truss-field--check">
                 <input id="truss-labels" type="checkbox"> <span class="truss-field-label">Laravel types</span>
             </label>
+            {{-- Truss's own control, reproduced and not reimplemented. It stays
+                 hidden until the payload actually carries tables to reveal,
+                 which it does only where `truss.reveal_excluded` allows them off
+                 the server. Hiding and revealing is the operator's decision in
+                 Truss config, and this package deliberately adds no switch of
+                 its own beside it. --}}
+            <label class="truss-field truss-field--check" id="truss-show-excluded-field" hidden>
+                <input id="truss-show-excluded" type="checkbox"> <span class="truss-field-label">Show hidden tables</span>
+            </label>
         </div>
 
         <div class="truss-utils">

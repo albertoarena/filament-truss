@@ -33,7 +33,7 @@ gains no write path just because it lives inside an admin panel.
 - PHP 8.2+
 - Laravel 12+
 - Filament 5+
-- `albertoarena/laravel-truss` v1.12.0+, which is where the schema, the diff and
+- `albertoarena/laravel-truss` v1.13.0+, which is where the schema, the diff and
   the structural findings come from
 
 Filament 4 is deliberately not supported. See [`docs/DECISIONS.md`](docs/DECISIONS.md).
@@ -48,6 +48,19 @@ leaves it.
 
 Being allowed into the panel is not the same as being allowed to read the
 database structure, and this package never treats it as such.
+
+## Hidden tables
+
+Truss keeps framework plumbing out of the diagram through its own
+`truss.excluded_tables`, so a panel on 17 tables may draw 8 of them. The footer
+says so (`8 of 17 tables`), and where `truss.reveal_excluded` allows it, a **Show
+hidden tables** toggle draws them muted. That is on by default in `local` and off
+elsewhere, matching `truss.enabled` and the `viewTruss` gate.
+
+**Both switches live in Truss's config and this package adds none of its own.**
+So the toggle being absent in production is a setting rather than a bug, and
+excluding a table to keep it off a shared panel keeps working: there is no query
+parameter and no plugin option that puts it back.
 
 ## Documentation
 
