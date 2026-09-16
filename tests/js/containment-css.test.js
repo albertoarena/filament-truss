@@ -24,6 +24,27 @@ function rule(selector) {
   return match ? match[2] : '';
 }
 
+/**
+ * The declarations of every rule whose selector mentions this fragment, joined.
+ *
+ * The exact match above is right for a block asserted as a whole. The toolbar
+ * chrome is deliberately several rules (light, dark, focus, and one per control
+ * type), so these read the group rather than one member of it.
+ */
+function rulesFor(fragment) {
+  return [...withoutComments.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+    .filter(([, selector]) => selector.includes(fragment))
+    .map(([, , declarations]) => declarations)
+    .join('\n');
+}
+
+/** Every rule in the sheet as a [selector, declarations] pair. */
+function rules() {
+  return [...withoutComments.matchAll(/([^{}]+)\{([^}]*)\}/g)].map(
+    ([, selector, declarations]) => [selector.trim(), declarations]
+  );
+}
+
 /** Every selector in the sheet, one entry per rule. */
 function selectors() {
   return [...withoutComments.matchAll(/([^{}]+)\{[^}]*\}/g)].map(([, selector]) =>
@@ -147,5 +168,71 @@ describe('the panel palette', () => {
     // thing that is wrong by the next Filament release.
     expect(light).not.toMatch(/#[0-9a-f]{3,8}\b/i);
     expect(dark).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+  });
+});
+
+describe('the toolbar, wearing the panel\'s own controls', () => {
+  // Truss styles its toolbar for a dashboard it owns: monospace, a 2px radius
+  // and a hairline border. Filament's inputs are its own typeface, rounded to
+  // `--radius-lg`, and carry a ring and a shadow instead of a border. The
+  // palette above already gives these their colours, so this is what is left,
+  // and next to a real Filament search field it is the last thing that still
+  // reads as a visitor in the panel.
+  //
+  // The rules hang off `ft-controls`, a class this package adds in its own
+  // Blade, rather than off Truss's `.truss-toolbar`. The markup is ours to
+  // write, so an upstream rename should cost us the Blade and not this sheet
+  // as well.
+  const chrome = rulesFor('.ft-controls');
+
+  it('wears the panel typeface rather than the diagram monospace', () => {
+    expect(chrome).toContain('var(--default-font-family)');
+  });
+
+  it('rounds to the panel radius rather than Truss\'s 2px', () => {
+    // A custom property, not 0.5rem written out, so a panel that changes its
+    // radius takes the toolbar with it.
+    expect(chrome).toMatch(/border-radius:\s*var\(--radius-lg\)/);
+  });
+
+  it('trades the hairline border for Filament\'s ring and shadow', () => {
+    // Filament draws no border at all: the outline is a 1px ring of the darkest
+    // grey at 10 percent, over a soft shadow. Measured from a rendered input in
+    // a panel rather than guessed at.
+    expect(chrome).toMatch(/border:\s*0/);
+    expect(chrome).toMatch(/box-shadow:[^;]*var\(--gray-950\)/);
+  });
+
+  it('rings in the panel primary on focus, in both modes', () => {
+    // Truss rings in `--bp-ink` at 22 percent and keeps a border. Filament
+    // replaces the grey ring with a solid 2px primary one, and steps the shade
+    // down in dark so it does not glare.
+    expect(rulesFor('.ft-controls input:focus')).toContain('var(--primary-600)');
+    expect(rulesFor(':root.dark #truss-app.truss-embed .ft-controls input:focus')).toContain(
+      'var(--primary-500)'
+    );
+  });
+
+  it('gives the checkboxes the panel accent', () => {
+    // The two toggles are native checkboxes, and a native checkbox painted by
+    // the operating system is the loudest wrong colour on the page.
+    expect(chrome).toMatch(/accent-color:\s*var\(--primary-/);
+  });
+
+  it('answers for dark with Filament\'s own class, not the bridged attribute', () => {
+    // The palette uses `data-theme`, because it is Truss's own switch. This is
+    // Filament's chrome, so it follows Filament's class and is right on the
+    // first paint, before the bridge script has run.
+    expect(rulesFor(':root.dark #truss-app.truss-embed .ft-controls')).not.toBe('');
+  });
+
+  it('leaves the diagram in its monospace', () => {
+    // Truss reads a schema in the canvas and column names line up because they
+    // are monospaced. Only the toolbar is being restyled here, and a blanket
+    // font rule would quietly take the diagram with it.
+    const typography = rules().filter(([, declarations]) => declarations.includes('font-family'));
+
+    expect(typography).not.toEqual([]);
+    expect(typography.every(([selector]) => selector.includes('.ft-controls'))).toBe(true);
   });
 });

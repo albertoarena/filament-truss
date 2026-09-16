@@ -55,7 +55,10 @@
          comments as structure, so this is not hypothetical. --}}
     <script type="application/json" data-truss-payload>@json($payload, JSON_HEX_TAG)</script>
 
-    <div class="truss-toolbar">
+    {{-- `ft-controls` is ours, not Truss's, and it is what the stylesheet hangs
+         the Filament control chrome on. Keeping it separate from
+         `truss-toolbar` means an upstream rename costs this file alone. --}}
+    <div class="truss-toolbar ft-controls">
         <label class="truss-field truss-field--search">
             <span class="truss-field-label">Filter</span>
             <input id="truss-search" type="search" placeholder="table name…" autocomplete="off">
