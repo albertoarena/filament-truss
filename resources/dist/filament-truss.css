@@ -374,3 +374,46 @@ body {
     color: var(--gray-100);
     background: color-mix(in oklab, var(--color-white) 7%, transparent);
 }
+
+/*
+ * The chrome around the diagram, in the panel's voice.
+ *
+ * Truss's dashboard is monospaced throughout, which is right for a page whose
+ * whole subject is a schema. Inside a panel the line falls somewhere else:
+ * identifiers stay monospaced, because columns of them line up and people copy
+ * them out, and the words the interface says in its own voice belong in the
+ * panel's typeface.
+ *
+ * So this sweeps the footer, the legend and panel headings, the export menu and
+ * the zoom readout. It deliberately leaves the canvas, the legend's PK and FK
+ * keys, which are the diagram's own notation, the focus picker's list, which is
+ * table names, and the health and diff bodies, which are dense with identifiers
+ * and rule codes.
+ *
+ * One caveat worth knowing before editing: `.truss-menu` is built by Truss's
+ * JavaScript rather than written in our Blade, unlike everything else named
+ * here, so it is the single selector in this block that an upstream rename
+ * would reach.
+ */
+#truss-app.truss-embed .truss-footer,
+#truss-app.truss-embed .truss-legend-head,
+#truss-app.truss-embed .truss-diff-head,
+#truss-app.truss-embed .truss-health-head,
+#truss-app.truss-embed .truss-menu button,
+#truss-app.truss-embed .truss-menu-note,
+#truss-app.truss-embed .truss-zoom button,
+#truss-app.truss-embed #truss-zoom-pct {
+    font-family: var(--default-font-family);
+    letter-spacing: 0;
+}
+
+/* Truss sets these at 11px, which is a monospace size. The same measure in a
+   proportional face reads a step smaller, so they come up to Filament's own
+   small text. */
+#truss-app.truss-embed .truss-footer,
+#truss-app.truss-embed .truss-legend-head,
+#truss-app.truss-embed .truss-diff-head,
+#truss-app.truss-embed .truss-health-head,
+#truss-app.truss-embed .truss-zoom button {
+    font-size: 0.75rem;
+}

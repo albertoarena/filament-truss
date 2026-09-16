@@ -239,19 +239,35 @@ describe('the toolbar, wearing the panel\'s own controls', () => {
     expect(rulesFor(':root.dark #truss-app.truss-embed .ft-controls')).not.toBe('');
   });
 
-  it('leaves the diagram in its monospace', () => {
-    // Truss reads a schema in the canvas and column names line up because they
-    // are monospaced. Only the toolbar is being restyled here, and a blanket
-    // font rule would quietly take the diagram with it.
-    const typography = rules()
-      .filter(([, declarations]) => declarations.includes('font-family'))
-      // `body` is the one exception, and it is the opposite of a font choice:
-      // it hands the page back to whatever typeface Filament set, after
-      // `truss.css` took it.
-      .filter(([selector]) => selector !== 'body');
+  it('never reaches into the canvas, where the schema is drawn', () => {
+    // The line this package draws. Truss's dashboard is monospaced throughout,
+    // which is right for a page whose subject is a schema. Inside a panel the
+    // line falls differently: identifiers stay monospaced, because columns of
+    // them line up and people copy them, and the words the interface says in
+    // its own voice belong in the panel's typeface.
+    //
+    // Everything inside the canvas is on the identifier side of that line, and
+    // no rule here may reach it.
+    const typography = rules().filter(([, declarations]) => declarations.includes('font-family'));
 
     expect(typography).not.toEqual([]);
-    expect(typography.every(([selector]) => selector.includes('.ft-controls'))).toBe(true);
+    expect(typography.some(([selector]) => selector.includes('truss-canvas'))).toBe(false);
+  });
+
+  it('leaves the schema text that sits in the chrome monospaced too', () => {
+    // Two pieces of schema live outside the canvas and must survive the sweep:
+    // the legend's PK and FK keys, which are the diagram's own notation, and
+    // the focus picker's list, which is table names.
+    const named = selectors().join(' ');
+
+    expect(named).not.toContain('truss-legend-list dt');
+    expect(named).not.toContain('truss-combo-list');
+  });
+
+  it('sets the interface text in the panel typeface', () => {
+    // The footer, the legend and panel headings, the export menu and the zoom
+    // readout: words this page says, not names it reports.
+    expect(rulesFor('.truss-footer')).toContain('var(--default-font-family)');
   });
 });
 

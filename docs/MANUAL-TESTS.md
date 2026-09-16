@@ -179,6 +179,12 @@ from it fails silently in the browser rather than loudly in the suite.
       preference and disagrees with the panel.
 - [ ] Load the page directly in dark mode (not toggled into it). The diagram is
       dark from the first paint rather than starting light.
+- [ ] **Interface text is the panel's, schema text is monospaced.** Open the
+      legend: the word "Legend" and the descriptions read in the panel typeface,
+      while `PK` and `FK` stay monospaced, because they are the diagram's own
+      notation. Same line in the export menu (interface), the footer counts
+      (interface), the focus picker's list (table names, monospaced) and the
+      canvas (monospaced).
 - [ ] **The panel's typeface survives this page.** Open a resource list and the
       schema page side by side and compare the sidebar, the topbar and the page
       heading. `truss.css` styles `body`, font included, and its rule is
