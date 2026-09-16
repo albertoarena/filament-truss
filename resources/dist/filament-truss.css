@@ -108,6 +108,11 @@ body {
     --bp-focus-border: var(--primary-600);
     --bp-cyan: var(--primary-500);
 
+    /* The focused table's own fill, which Truss paints a pale cyan. White over
+       the panel's grey is what a Filament card does, and the primary border
+       above already says which table is focused. */
+    --bp-focus-bg: var(--color-white);
+
     --bp-bg: var(--gray-100);
     --bp-edge-bg: var(--gray-100);
 
@@ -144,6 +149,10 @@ body {
     --bp-ink: var(--primary-400);
     --bp-focus-border: var(--primary-400);
     --bp-cyan: var(--primary-300);
+
+    /* One step up from the entity fill rather than white, which in dark would
+       be a slab. */
+    --bp-focus-bg: var(--gray-800);
 
     --bp-bg: var(--gray-950);
     --bp-edge-bg: var(--gray-950);
@@ -199,6 +208,22 @@ body {
  * Scoped to the toolbar on purpose: the diagram is monospaced because a schema
  * reads better in columns that line up, and it stays that way.
  */
+/*
+ * The bar itself, before the controls in it.
+ *
+ * The container is a column flexbox, so the toolbar is a flex child and shrinks:
+ * Truss asks for 54px and it was rendering at 43. Two things followed, and the
+ * second took some finding. It looked cramped once the controls grew to
+ * Filament's 36px, and the health badge was clipped, because it rides 4px above
+ * its own button and a short bar put that 4px over the container's
+ * `overflow: hidden` edge. `flex: none` fixes both.
+ */
+#truss-app.truss-embed .ft-controls {
+    flex: none;
+    height: auto;
+    padding: 0.75rem 1rem;
+}
+
 #truss-app.truss-embed .ft-controls input[type="search"],
 #truss-app.truss-embed .ft-controls input[type="text"],
 #truss-app.truss-embed .ft-controls input[type="number"],
@@ -310,4 +335,35 @@ body {
 #truss-app.truss-embed .ft-controls .truss-util[aria-expanded="true"] {
     color: var(--color-white);
     background: var(--primary-600);
+}
+
+/*
+ * The export menu's hover and the focus combobox's active option.
+ *
+ * Truss paints both from `--bp-info-bg`, a pale blue, and next to Filament's own
+ * dropdowns they read as another design system. Filament hovers a dropdown item
+ * with `--gray-50` over a white panel; Truss's menu panel is itself `--gray-50`,
+ * so the same value here would be a hover you cannot see. One step further along
+ * the same scale keeps Filament's idea and stays visible.
+ *
+ * Overridden here rather than by remapping the token: `--bp-info-bg` also means
+ * "info" in the banners, the health panel and the diagram's own markers, and a
+ * hover state is not a severity. The severity families stay Truss's.
+ *
+ * `aria-disabled` is excluded because these selectors out-specify the rule that
+ * dims an export this page cannot perform, and a disabled item that lights up on
+ * hover is an offer the page cannot keep.
+ */
+#truss-app.truss-embed .truss-menu button:not([aria-disabled="true"]):hover,
+#truss-app.truss-embed .truss-menu button:not([aria-disabled="true"]):focus-visible,
+#truss-app.truss-embed .truss-combo-opt.is-active {
+    color: var(--gray-950);
+    background: var(--gray-100);
+}
+
+:root.dark #truss-app.truss-embed .truss-menu button:not([aria-disabled="true"]):hover,
+:root.dark #truss-app.truss-embed .truss-menu button:not([aria-disabled="true"]):focus-visible,
+:root.dark #truss-app.truss-embed .truss-combo-opt.is-active {
+    color: var(--gray-100);
+    background: color-mix(in oklab, var(--color-white) 7%, transparent);
 }

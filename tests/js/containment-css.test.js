@@ -236,3 +236,53 @@ describe('the toolbar, wearing the panel\'s own controls', () => {
     expect(typography.every(([selector]) => selector.includes('.ft-controls'))).toBe(true);
   });
 });
+
+describe('the toolbar, given room to stand in', () => {
+  // The bar itself, not the controls in it, so the assertions below cannot pass
+  // on the padding of an input.
+  const controls = rule('#truss-app.truss-embed .ft-controls');
+
+  it('refuses to be squeezed by the diagram below it', () => {
+    // The container is a column flexbox, so the toolbar is a flex child and
+    // shrinks: Truss asks for 54px and it was rendering at 43. That is what
+    // made it look cramped once the controls grew to Filament's 36px, and it
+    // is also what clipped the health badge, which rides 4px above its button
+    // and so ended up over the container's own `overflow: hidden` edge.
+    expect(controls).toMatch(/flex:\s*none/);
+  });
+
+  it('pads above and below, now the controls are Filament sized', () => {
+    expect(controls).toMatch(/padding:[^;]*rem/);
+  });
+});
+
+describe('the panel palette, on the states Truss paints blue', () => {
+  const light = rule('.truss-embed');
+  const dark = rule(':root[data-theme="dark"] .truss-embed');
+
+  it('fills a focused table like a Filament card, not in cyan', () => {
+    // `--bp-focus-bg` is Truss's pale cyan and it fills the focused table's
+    // name band, which read as a different design system sitting inside the
+    // panel. White over the panel's grey is what a Filament card does, and the
+    // primary border already carries the focus signal on its own.
+    expect(light).toMatch(/--bp-focus-bg:\s*var\(--color-white\)/);
+    expect(dark).toMatch(/--bp-focus-bg:\s*var\(--gray-/);
+  });
+
+  it('hovers a menu item in the panel grey rather than Truss\'s blue', () => {
+    // Truss paints the export menu's hover and the focus combobox's active
+    // option from `--bp-info-bg`, which is a pale blue. Overridden here rather
+    // than by remapping the token, because that token also carries the meaning
+    // "info" in the banners and the health panel, and a hover state is not a
+    // severity.
+    //
+    // `--gray-100` and not Filament's own `--gray-50`: Filament hovers over a
+    // white dropdown, and Truss's menu panel is already `--gray-50`, so that
+    // value would be a hover with nothing to show. Found by hovering one.
+    expect(rulesFor('.truss-menu button')).toMatch(/background:\s*var\(--gray-100\)/);
+
+    // The dim on an export this page cannot perform is weaker than these
+    // selectors, so a disabled item would otherwise light up on hover.
+    expect(selectors().filter((s) => s.includes('.truss-menu')).join()).toContain('aria-disabled');
+  });
+});
