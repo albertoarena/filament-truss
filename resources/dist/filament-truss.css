@@ -34,6 +34,13 @@
  */
 body {
     background: var(--gray-50);
+
+    /* The same rule, the same trap, and the font half of it was missed the
+       first time: `truss.css` sets `body`'s font as well as its background, so
+       this page alone rendered its heading, sidebar, topbar and Filament's own
+       search input in `system-ui`. Handed back to the property Filament sets it
+       from, rather than restated, so a panel with its own typeface keeps it. */
+    font-family: var(--default-font-family);
 }
 
 /* Filament's own class rather than the `data-theme` attribute the palette below

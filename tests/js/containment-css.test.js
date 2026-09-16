@@ -108,6 +108,19 @@ describe('the containment stylesheet', () => {
     expect(viewport).toMatch(/min-height\s*:\s*0/);
   });
 
+  it('hands the panel its typeface back, for the same reason as the background', () => {
+    // The same trap as the background, and only half of it was seen the first
+    // time. `truss.css` styles `body` for a page it owns, and that includes the
+    // font. The rule is unlayered, Filament's is inside a Tailwind layer, and an
+    // unlayered rule wins however weak its selector.
+    //
+    // So the whole page rendered in `system-ui` on this page alone: heading,
+    // subheading, sidebar, topbar, and Filament's own search input. Measured
+    // rather than noticed, because system-ui and Inter are close enough to
+    // survive a glance.
+    expect(rule('body')).toMatch(/font-family:\s*var\(--default-font-family\)/);
+  });
+
   it('hides the theme button, because the panel owns the theme', () => {
     // Hidden rather than removed from the markup: Truss reaches for this element
     // without checking whether it is there.
@@ -230,7 +243,12 @@ describe('the toolbar, wearing the panel\'s own controls', () => {
     // Truss reads a schema in the canvas and column names line up because they
     // are monospaced. Only the toolbar is being restyled here, and a blanket
     // font rule would quietly take the diagram with it.
-    const typography = rules().filter(([, declarations]) => declarations.includes('font-family'));
+    const typography = rules()
+      .filter(([, declarations]) => declarations.includes('font-family'))
+      // `body` is the one exception, and it is the opposite of a font choice:
+      // it hands the page back to whatever typeface Filament set, after
+      // `truss.css` took it.
+      .filter(([selector]) => selector !== 'body');
 
     expect(typography).not.toEqual([]);
     expect(typography.every(([selector]) => selector.includes('.ft-controls'))).toBe(true);

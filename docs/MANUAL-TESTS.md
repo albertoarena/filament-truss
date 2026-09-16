@@ -179,6 +179,13 @@ from it fails silently in the browser rather than loudly in the suite.
       preference and disagrees with the panel.
 - [ ] Load the page directly in dark mode (not toggled into it). The diagram is
       dark from the first paint rather than starting light.
+- [ ] **The panel's typeface survives this page.** Open a resource list and the
+      schema page side by side and compare the sidebar, the topbar and the page
+      heading. `truss.css` styles `body`, font included, and its rule is
+      unlayered where Filament's is in a Tailwind layer, so it wins by default
+      and the whole page silently drops to `system-ui`. **Measure it rather than
+      look**: `getComputedStyle(document.body).fontFamily` on both pages. Inter
+      and system-ui pass a glance.
 - [ ] **The page around the diagram is the panel's own background in dark**, not
       a white slab. This sheet repaints `body`, because Truss's unlayered rule
       beats Filament's layered one and there is nothing to fall back to. It is
