@@ -105,13 +105,13 @@ This whole feature belongs to Truss (v1.13.0). What is being checked here is tha
 the panel presents it, since the container is reproduced and an element missing
 from it fails silently in the browser rather than loudly in the suite.
 
-- [ ] The footer reads **`8 of 17 tables`** and not `8 tables`, on a panel whose
+- [ ] The footer reads **`8 of 16 tables`** and not `8 tables`, on a panel whose
       database has more tables than `truss.excluded_tables` leaves drawable. This
       is the whole point: a filtered diagram must not present itself as the whole
       schema.
 - [ ] Filter or focus to narrow the view: the footer follows (`2 of 8`), and
       still shows **two numbers, never three**.
-- [ ] A database with nothing excluded reads a plain `17 tables`.
+- [ ] A database with nothing excluded reads a plain `16 tables`.
 - [ ] **`truss.reveal_excluded` true** (the default in `local`): the **Show
       hidden tables** checkbox is in the more-controls group, after Laravel
       types. Tick it and the hidden tables are drawn **muted**; untick it and
@@ -123,10 +123,18 @@ from it fails silently in the browser rather than loudly in the suite.
       clean". If they look like ordinary tables, that is the bug.
 - [ ] With the toggle on, a revealed table appears in the **focus picker** and in
       the filter, and behaves like any other table while it is on screen.
+- [ ] Known and not ours: **revealing does not re-fit the view.** Truss keeps the
+      current pan and zoom, so on a fitted diagram the newly revealed tables can
+      land outside the viewport and the change reads as "nothing happened" until
+      Fit is pressed. The footer moving from `8 of 16` to `16 tables` is what
+      confirms it worked. Do not report this as a plugin bug.
 - [ ] **`truss.reveal_excluded` false** (the default outside `local`): the
-      checkbox is **absent**, not present and inert, and the footer still reads
-      `8 of 17`. View source and confirm the hidden tables are **not in the
-      payload at all**. A count left the server; names did not.
+      checkbox is **not shown**, and the footer still reads `8 of 16`. The label
+      is in the DOM carrying `hidden`, exactly as it is on Truss's own dashboard,
+      so "not shown" is the check and the payload below is the guarantee.
+- [ ] With it false, view source and confirm the hidden tables are **not in the
+      payload at all**, not merely undrawn. A count left the server; names did
+      not.
 - [ ] There is no way to reveal them from the panel: no plugin option, no page
       action, and **no query parameter**. Try `?show_excluded=1` and confirm it
       does nothing. Revealing is the operator's decision in Truss config, which
@@ -191,3 +199,21 @@ from it fails silently in the browser rather than loudly in the suite.
 Note the Truss version, the Filament version, the panel theme, the browser, and
 anything skipped. **A checklist with no record of which version it passed against
 says nothing the next time Truss is upgraded.**
+
+## Passes recorded
+
+**16/09/2026, partial.** Truss v1.13.0, Filament 5, Laravel 13, the default panel
+theme in light and dark, Chrome, against the demo panel (16 tables, 8 drawable).
+
+Passed: section 3a in full, plus the table popover and both export menus offering
+every format ungreyed, the theme following the panel instantly in both directions
+with `data-theme` mirrored onto Filament's `dark` class, and a clean console
+across a full load, a reveal, a filter and a focus. Muting is `opacity: 0.55` on
+the node group, so it is palette independent and holds in both themes by
+construction rather than by luck.
+
+**Not covered and still needing a person:** that the six exports actually download
+and open (a download was deliberately not triggered), the diff and health panels,
+the large-schema banner, the non-default and custom panel themes with the compact
+modifier, the narrow-viewport more-controls button, and the two judgement calls in
+section 4 about the grey steps and row readability.
