@@ -146,6 +146,20 @@ from it fails silently in the browser rather than loudly in the suite.
 - [ ] Toggle the panel between light and dark: the diagram follows immediately,
       with no reload and no flash of the other theme.
 - [ ] Truss's own theme button (`◐`) is not visible.
+- [ ] **The toolbar controls read as Filament's, not as Truss's.** Put this page
+      beside a resource list and compare the Filter box with the table's Search
+      box: same typeface, same rounding, same ring and shadow, same height. In
+      both modes.
+- [ ] Focus a control: a solid 2px ring in the panel's primary, no border, and
+      the shade steps down in dark rather than glaring.
+- [ ] The two checkboxes are Filament's own, which is to say rounded with a ring
+      when empty and filled with the panel primary when ticked, never the blue
+      the operating system paints.
+- [ ] **The diagram is still monospaced.** Only the toolbar was restyled, and a
+      blanket font rule would take the canvas with it, where columns line up
+      because they are monospaced.
+- [ ] Change the panel's primary and reload: the focus ring and the ticked
+      checkbox follow it, because both read Filament's own properties.
 - [ ] **Dark operating system, light panel: the diagram is light.** This is the
       whole point of the bridge. Without it Truss falls back to the machine's
       preference and disagrees with the panel.

@@ -266,8 +266,12 @@ body {
     color: var(--gray-400);
 }
 
-/* A native checkbox is painted by the operating system, which makes it the
-   loudest wrong colour on the page: blue in a panel with an amber primary. */
+/* The fallback, not the mechanism. These two carry `fi-checkbox-input` in the
+   Blade, so Filament styles them outright with `appearance: none` and rules for
+   every state. This stays because that is a Filament class name rather than one
+   of ours: if it is ever renamed, the checkboxes degrade to native controls
+   tinted with the panel primary rather than to whatever blue the operating
+   system paints next to an amber panel. */
 #truss-app.truss-embed .ft-controls input[type="checkbox"] {
     width: 1rem;
     height: 1rem;

@@ -78,8 +78,14 @@
                 <span class="truss-field-label">Depth</span>
                 <input id="truss-depth" type="number" min="0" step="1">
             </label>
+            {{-- `fi-checkbox-input` is Filament's own class, and this is the one
+                 place this page borrows one. A native checkbox is painted by the
+                 operating system and `accent-color` reaches only its checked
+                 fill, so the stylesheet cannot fake it the way it fakes the text
+                 inputs. Filament styles this selector outright, needing no
+                 wrapper and no markup of its own around it. --}}
             <label class="truss-field truss-field--check">
-                <input id="truss-labels" type="checkbox"> <span class="truss-field-label">Laravel types</span>
+                <input id="truss-labels" type="checkbox" class="fi-checkbox-input"> <span class="truss-field-label">Laravel types</span>
             </label>
             {{-- Truss's own control, reproduced and not reimplemented. It stays
                  hidden until the payload actually carries tables to reveal,
@@ -88,7 +94,7 @@
                  Truss config, and this package deliberately adds no switch of
                  its own beside it. --}}
             <label class="truss-field truss-field--check" id="truss-show-excluded-field" hidden>
-                <input id="truss-show-excluded" type="checkbox"> <span class="truss-field-label">Show hidden tables</span>
+                <input id="truss-show-excluded" type="checkbox" class="fi-checkbox-input"> <span class="truss-field-label">Show hidden tables</span>
             </label>
         </div>
 

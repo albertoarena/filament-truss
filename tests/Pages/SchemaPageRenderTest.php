@@ -97,6 +97,28 @@ it('sends the hidden tables only where Truss config allows it', function () {
         ->and($html)->toContain('"books"');
 });
 
+it('borrows the panel\'s own checkbox rather than imitating one', function () {
+    // The one control the stylesheet cannot convincingly fake. A native
+    // checkbox is painted by the operating system, and `accent-color` reaches
+    // only the checked fill, so an unchecked box stays whatever grey the OS
+    // fancies next to Filament's own rounded, ringed one.
+    //
+    // Filament styles `input[type=checkbox].fi-checkbox-input` outright, with
+    // `appearance: none` and rules for the checked, focus, disabled and dark
+    // states. It needs no wrapper and no markup of Filament's around it, which
+    // is what makes this worth borrowing where the text inputs are not.
+    //
+    // Asserted over every checkbox rather than a count, so a control added here
+    // later cannot quietly ship unstyled.
+    preg_match_all('/<input[^>]*type="checkbox"[^>]*>/', renderDiagram(), $matches);
+
+    expect($matches[0])->not->toBeEmpty();
+
+    foreach ($matches[0] as $checkbox) {
+        expect($checkbox)->toContain('fi-checkbox-input');
+    }
+});
+
 it('embeds structure and nothing else', function () {
     DB::table('authors')->insert(['name' => 'Ada Lovelace']);
 

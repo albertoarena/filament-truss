@@ -247,3 +247,38 @@ argument about the same boundary, in a different place.
 **What this package still owes the feature** is the markup and the manual check,
 because the toggle is upstream's and the container is ours. The drift guard is
 what makes that an upgrade-time failure rather than a silent one.
+
+## Match Filament's controls by recipe, and borrow its class only for the checkbox
+
+**Context:** the palette gives the toolbar its colours, so the controls turn dark
+with the panel, but it cannot reach shape or type. Truss styles its toolbar for a
+dashboard it owns: monospace at 12.5px, a 2px radius, a hairline border. Beside a
+real Filament search field that was the last thing on the page still reading as a
+visitor. Two ways to fix it: reproduce Filament's look from its own custom
+properties, or borrow Filament's own classes and get the real thing.
+**Decision:** both, split by what each is good at. The text inputs, labels and
+utility buttons are restyled in our stylesheet from Filament's properties
+(`--radius-lg`, `--primary-600`, `--default-font-family`, the greys), keyed to
+`ft-controls`, a class this package adds in its own Blade. The two checkboxes
+carry Filament's own `fi-checkbox-input`.
+**Trade-off:** the recipe is an imitation and can drift as Filament's inputs
+evolve, which is the price of not depending on its class names. The checkbox is
+the one control where that price is not worth paying: a native checkbox is
+painted by the operating system and `accent-color` reaches only the checked fill,
+so an unchecked box stays the wrong grey whatever we write. Filament styles
+`input[type=checkbox].fi-checkbox-input` outright, across the rest, checked,
+focus, disabled and dark states, and needs no wrapper. Our `accent-color` rule
+stays behind it as a fallback, so a rename upstream degrades to a primary-tinted
+native control rather than to an operating-system blue.
+
+**Two borrowings considered and rejected**, both after reading the panel's
+compiled stylesheet. `fi-input-wrp` carries the input chrome, but adopting it
+means wrapping every field in markup Filament expects, and the focus combobox
+anchors an absolutely positioned listbox to its own container, so the wrapper
+buys what the recipe already gives at the cost of the one control most likely to
+break. `fi-icon-btn` carries `margin: calc(var(--spacing) * -2)`, a negative
+margin that assumes the padding of a Filament container that is not there.
+
+**Keyed to `ft-controls` rather than to `.truss-toolbar` on purpose.** The
+toolbar markup is reproduced in this package, so hanging our chrome on a class of
+our own means an upstream rename costs the Blade and not the stylesheet as well.
