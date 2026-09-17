@@ -229,6 +229,23 @@ body {
     flex: none;
     height: auto;
     padding: 0.75rem 1rem;
+
+    /* White, because that is what a header is in this panel. Truss paints the
+       bar from `--bp-panel`, which the palette maps to `--gray-50`: the same
+       colour as the page behind it, where a Filament table header is `#fff`
+       over that grey. Measured side by side rather than judged by eye.
+
+       Set here rather than by moving `--bp-panel`, which also paints the
+       legend, the menus and the footer. This is the one bar being compared
+       with a Filament header, so it is the one that changes. */
+    background: var(--color-white);
+}
+
+/* Filament's card is `--gray-900` in dark, which is where `--bp-panel` already
+   landed. Restated because the rule above would otherwise paint a white bar
+   into a dark panel. */
+:root.dark #truss-app.truss-embed .ft-controls {
+    background: var(--gray-900);
 }
 
 #truss-app.truss-embed .ft-controls input[type="search"],

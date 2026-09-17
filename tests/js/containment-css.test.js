@@ -288,6 +288,27 @@ describe('the toolbar, given room to stand in', () => {
   it('pads above and below, now the controls are Filament sized', () => {
     expect(controls).toMatch(/padding:[^;]*rem/);
   });
+
+  it('sits on white, like the header of a Filament table', () => {
+    // Measured side by side on 17/09/2026: a resource's table header is
+    // `#fff` over the page's `--gray-50`, and the toolbar was taking
+    // `--bp-panel`, which is `--gray-50` again. Same colour as the page it
+    // sits on, one step off the card every other header in the panel is.
+    //
+    // Set here rather than by moving `--bp-panel`, which also paints the
+    // legend, the menus and the footer. This is the one bar being compared
+    // with a Filament header.
+    expect(controls).toMatch(/background:\s*var\(--color-white\)/);
+  });
+
+  it('follows the panel into dark, where the card is not white', () => {
+    // Filament's card is `--gray-900` in dark, which is what `--bp-panel`
+    // already resolved to. Restated because the rule above would otherwise
+    // paint a white bar into a dark panel.
+    expect(rule(':root.dark #truss-app.truss-embed .ft-controls')).toMatch(
+      /background:\s*var\(--gray-900\)/
+    );
+  });
 });
 
 describe('the panel palette, on the states Truss paints blue', () => {

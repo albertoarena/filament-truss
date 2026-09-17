@@ -176,6 +176,10 @@ no-op rather than an error.
       beside a resource list and compare the Filter box with the table's Search
       box: same typeface, same rounding, same ring and shadow, same height. In
       both modes.
+- [ ] **The toolbar sits on the same colour as a table header**: white in light,
+      `--gray-900` in dark, over the page's own grey. Measured rather than
+      judged, since `--gray-50` and white are one step apart and the eye forgives
+      it while a screenshot beside a resource does not.
 - [ ] Focus a control: a solid 2px ring in the panel's primary, no border, and
       the shade steps down in dark rather than glaring.
 - [ ] The two checkboxes are Filament's own, which is to say rounded with a ring
