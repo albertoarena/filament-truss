@@ -184,6 +184,48 @@ describe('the panel palette', () => {
   });
 });
 
+describe('the severity families, which Truss hard-codes', () => {
+  // Truss ships info, warning and error as fixed hexes rather than as theme
+  // knobs, so the palette above left them alone and the page wore them: a pale
+  // blue banner reading `#e5eefb` on `#12356b` inside an amber panel, and a
+  // health badge in `#a11`. Found by the driven pass on 17/09/2026, with the
+  // large-schema banner the loudest of the three.
+  //
+  // Filament emits `--info-*`, `--warning-*` and `--danger-*` as full 50 to 950
+  // scales, so there is a step to map each one to. Outside Truss's knob map,
+  // like the grid tokens, which is why the Pest reflection test cannot police
+  // these and this one does.
+  const light = rule('.truss-embed');
+  const dark = rule(':root[data-theme="dark"] .truss-embed');
+
+  const families = [
+    ['--bp-info', 'info'],
+    ['--bp-warn', 'warning'],
+    ['--bp-error', 'danger'],
+  ];
+
+  it('takes all three from the panel rather than from blueprint hexes', () => {
+    for (const [token, family] of families) {
+      expect(light).toMatch(new RegExp(`${token}-bg:\\s*var\\(--${family}-100\\)`));
+      expect(light).toMatch(new RegExp(`${token}-fg:\\s*var\\(--${family}-700\\)`));
+    }
+  });
+
+  it('steps them the other way for dark, as the rest of the palette does', () => {
+    for (const [token, family] of families) {
+      expect(dark).toMatch(new RegExp(`${token}-bg:\\s*var\\(--${family}-950\\)`));
+      expect(dark).toMatch(new RegExp(`${token}-fg:\\s*var\\(--${family}-400\\)`));
+    }
+  });
+
+  it('writes no colour of its own anywhere in the palette', () => {
+    // The whole sheet reads Filament's properties. A hex here would be a value
+    // this package invented, which is the thing the palette exists to avoid.
+    expect(light).not.toMatch(/#[0-9a-f]{3}/i);
+    expect(dark).not.toMatch(/#[0-9a-f]{3}/i);
+  });
+});
+
 describe('the toolbar, wearing the panel\'s own controls', () => {
   // Truss styles its toolbar for a dashboard it owns: monospace, a 2px radius
   // and a hairline border. Filament's inputs are its own typeface, rounded to
@@ -269,6 +311,14 @@ describe('the toolbar, wearing the panel\'s own controls', () => {
     // readout: words this page says, not names it reports.
     expect(rulesFor('.truss-footer')).toContain('var(--default-font-family)');
   });
+
+  it('includes the banners, which are sentences and not schema', () => {
+    // Missed by the first sweep because no banner was on screen to notice:
+    // "8 tables, a large schema. Use the filter or focus a table" was rendering
+    // in IBM Plex Mono at 11.5px, which is the notation face at a notation size
+    // for a sentence of plain English.
+    expect(rulesFor('.truss-banner')).toContain('var(--default-font-family)');
+  });
 });
 
 describe('the utility buttons, which are toggles and not fields', () => {
@@ -319,6 +369,19 @@ describe('the utility buttons, which are toggles and not fields', () => {
     expect(
       rule(':root.dark #truss-app.truss-embed .ft-controls .truss-util:focus-visible')
     ).toMatch(/var\(--primary-500\)/);
+  });
+
+  it('lets the health button keep its severity, now that severity is Filament\'s', () => {
+    // Truss colours this button by what the doctor found, and our base rule
+    // out-specified it, so the icon sat grey beside a red count. It was not
+    // worth restoring while the severity colours were blueprint hexes; with the
+    // palette mapped it is the panel's own danger and warning.
+    expect(
+      rule('#truss-app.truss-embed .ft-controls .truss-util[data-severity="error"]')
+    ).toMatch(/color:\s*var\(--bp-error-fg\)/);
+    expect(
+      rule('#truss-app.truss-embed .ft-controls .truss-util[data-severity="warning"]')
+    ).toMatch(/color:\s*var\(--bp-warn-fg\)/);
   });
 
   it('still says which panel is open', () => {

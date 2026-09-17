@@ -145,6 +145,22 @@ body {
        it reads as texture and never as a table border. */
     --bp-grid: color-mix(in oklch, var(--gray-400) 14%, transparent);
     --bp-grid-strong: color-mix(in oklch, var(--gray-400) 24%, transparent);
+
+    /* The severity families, also outside the knob map and also hard-coded
+       upstream: `#e5eefb` on `#12356b` for info, `#fbeeda` on `#8a5a00` for a
+       warning, `#f7dede` on `#a11` for an error. Left alone they are the last
+       blueprint colours on the page, and the large-schema banner is the loudest
+       of them: a pale blue slab across the top of an amber panel.
+
+       Filament emits all three as full scales, so each one has a step to take.
+       100 over 700 is the pairing its own badges use, and it keeps the contrast
+       these carry upstream. */
+    --bp-info-bg: var(--info-100);
+    --bp-info-fg: var(--info-700);
+    --bp-warn-bg: var(--warning-100);
+    --bp-warn-fg: var(--warning-700);
+    --bp-error-bg: var(--danger-100);
+    --bp-error-fg: var(--danger-700);
 }
 
 /*
@@ -183,6 +199,16 @@ body {
 
     --bp-grid: color-mix(in oklch, var(--gray-400) 10%, transparent);
     --bp-grid-strong: color-mix(in oklch, var(--gray-400) 16%, transparent);
+
+    /* The same three, stepped the other way, exactly as the greys above are.
+       950 is dark enough to read as a tint of the surface rather than a slab,
+       and 400 is the step that stays legible on it. */
+    --bp-info-bg: var(--info-950);
+    --bp-info-fg: var(--info-400);
+    --bp-warn-bg: var(--warning-950);
+    --bp-warn-fg: var(--warning-400);
+    --bp-error-bg: var(--danger-950);
+    --bp-error-fg: var(--danger-400);
 }
 
 /*
@@ -387,6 +413,19 @@ body {
     box-shadow: 0 0 0 2px var(--primary-500);
 }
 
+/* Truss colours the health button by what the doctor found, and the base rule
+   above out-specifies it, so the icon sat grey beside a red count. Restated
+   here now that `--bp-error-fg` and `--bp-warn-fg` are the panel's own danger
+   and warning rather than the blueprint hexes they were until today. Before the
+   open state below, so an open panel still reads as open. */
+#truss-app.truss-embed .ft-controls .truss-util[data-severity="error"] {
+    color: var(--bp-error-fg);
+}
+
+#truss-app.truss-embed .ft-controls .truss-util[data-severity="warning"] {
+    color: var(--bp-warn-fg);
+}
+
 /* Kept from Truss rather than dropped with the rest, and restated because the
    rules above out-specify its own open-state colours. Filament's dropdowns hang
    off their trigger and need no open state; the legend and the health panel
@@ -449,6 +488,7 @@ body {
  * would reach.
  */
 #truss-app.truss-embed .truss-footer,
+#truss-app.truss-embed .truss-banner,
 #truss-app.truss-embed .truss-legend-head,
 #truss-app.truss-embed .truss-diff-head,
 #truss-app.truss-embed .truss-health-head,
@@ -464,6 +504,7 @@ body {
    proportional face reads a step smaller, so they come up to Filament's own
    small text. */
 #truss-app.truss-embed .truss-footer,
+#truss-app.truss-embed .truss-banner,
 #truss-app.truss-embed .truss-legend-head,
 #truss-app.truss-embed .truss-diff-head,
 #truss-app.truss-embed .truss-health-head,

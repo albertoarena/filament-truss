@@ -258,7 +258,13 @@ no-op rather than an error.
       needed for a colour this package has never heard of.
 - [ ] Nothing in the diagram is still wearing Truss's blueprint navy. A single
       element that is means a token our palette does not cover, which the
-      reflection test should have caught, so say which one.
+      reflection test should have caught, so say which one. **The banners are the
+      place to look**, because they were the last three: info, warning and error
+      were hard-coded hexes upstream rather than theme knobs, and a large-schema
+      banner in `#e5eefb` is the loudest thing on the page.
+- [ ] **The health button carries its severity**: the icon is the panel's danger
+      or warning colour when the doctor found something, not grey beside a red
+      count.
 - [ ] Text on entity rows and in the toolbar is comfortably readable in both
       modes. The greys are mapped by step, and steps are a judgement that only a
       pair of eyes settles.
