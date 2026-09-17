@@ -263,9 +263,16 @@ no-op rather than an error.
 - [ ] A custom panel theme: same question, and the honest one, since this is what
       most real panels run.
 - [ ] **Change the panel's primary colour** (`->colors(['primary' => Color::Teal])`)
-      and reload: the entity borders, primary key badges and focus ring follow it.
-      They are read from Filament's `--primary-*`, so no change here should be
-      needed for a colour this package has never heard of.
+      and reload. **What follows it**: the rule under the toolbar, the focused
+      table's border, the input focus ring, the checkbox accent, the zoom
+      controls and slider, the legend keys, the open state on the utility
+      buttons, and the diff button when there are changes. They are read from
+      Filament's `--primary-*`, so no change here should be needed for a colour
+      this package has never heard of.
+
+      **What does not follow it, and should not**: the PK and FK badges, which
+      are entity text and take the grey scale, and the health button, which takes
+      danger or warning because severity is not an accent.
 - [ ] Nothing in the diagram is still wearing Truss's blueprint navy. A single
       element that is means a token our palette does not cover, which the
       reflection test should have caught, so say which one. **The banners are the
