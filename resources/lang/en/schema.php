@@ -12,4 +12,9 @@ return [
     'subheading' => 'The database this panel runs on, read live. Structure only: tables, columns, indexes and keys, and never any row data.',
 
     'documentation_label' => 'Documentation',
+
+    // On a button somewhere else in the panel, so it says where it goes rather
+    // than naming the package. "Schema" alone would read as a section of the
+    // resource being looked at.
+    'focus_action_label' => 'View in schema',
 ];

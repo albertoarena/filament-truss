@@ -220,6 +220,39 @@ is ever screenshotted:** on a panel covering only part of its database, most
 tables will come back unmapped, which is either the feature demonstrating itself
 perfectly or a misleading first impression.
 
+## The focus deep link moves into v0.1, the rest of resource linking does not
+
+**Context:** the entry above put every part of resource linking in v0.2, written
+before anything had been tried in a panel. What a browser then showed is that the
+two halves cost nothing like the same. Truss parses `focus` from the query string
+and applies it on load, so a button opening `database-schema?focus=books` needs
+no JavaScript of ours, no addition to the payload and no second renderer. The
+other half, reporting which tables no resource manages, still needs the panel's
+own map of resources and a judgement about what unmapped means.
+**Decision:** ship the deep link in v0.1 as `ViewInSchemaAction`, with
+`HasViewInSchemaAction` opting a resource in. Leave the unmapped-table finding in
+v0.2.
+**Trade-off:** it widens v0.1 by a feature, against a first release with nothing
+in it that a diagram in a frame does not also have. The button is the screenshot
+that explains why this is a plugin rather than a link to a dashboard, and it is
+small enough that leaving it out costs more than putting it in.
+
+**Three guards, all of them learned rather than guessed.** Hide when the panel
+being rendered has no such page, because a resource shared between two panels
+would otherwise throw where the plugin is not registered. Hide unless the page's
+own access rule allows this viewer, because listing a resource is not reading the
+database structure. Hide when Truss excludes the table, because `?focus=cache` is
+ignored and a button that does nothing gets reported as a bug. Removed rather
+than disabled, since a viewer can do nothing about any of the three and a greyed
+control invites them to try.
+
+**The exclusion question is answered from config, not from a payload.** It is
+asked once per button and `Truss::payload()` reads the whole schema, so the
+merge Truss does over `excluded_tables` is repeated in one small class of ours
+with its own test. The parameter name is pinned from the other side by a Vitest
+case that imports `url-state.js` out of `vendor/`, so an upstream rename fails on
+the upgrade instead of shipping a button that opens an unfocused diagram.
+
 ## Hiding and revealing tables is Truss's, and this package adds no control
 
 **Context:** a panel on a 17 table database draws 8 of them, because Truss

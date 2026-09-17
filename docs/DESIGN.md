@@ -199,18 +199,43 @@ Two things fall out, and the second is the more interesting:
   see.
 
 **Nobody can copy this without a panel.** It is the difference between the same
-diagram in a frame and a plugin. **Not in v0.1**: the first release is the
-diagram, the focus picker and the panel's own styling, because those have to be
-right before anything else is worth adding.
+diagram in a frame and a plugin.
+
+**The half that costs nothing is in v0.1.** Truss reads `focus` from the query
+string and applies it on load, so a button that opens
+`database-schema?focus=books` is a link rather than a feature: no JavaScript of
+ours, no addition to the payload, nothing new to keep in step with the renderer.
+That is `ViewInSchemaAction`, and `HasViewInSchemaAction` opts a resource in with
+one line by asking it for `getModel()` and taking the table from there.
+
+Three questions decide whether the button appears, and each is a bug report if
+dropped:
+
+- **Is the page on this panel?** A resource can be registered on two panels where
+  only one of them has the plugin, and building the URL there would throw.
+- **May this viewer see it?** The page's own rule, which is Truss's rule. Being
+  allowed to list Books is not being allowed to read the database structure.
+- **Will the diagram draw the table?** Truss ignores `?focus=` for an excluded
+  table, silently and correctly, so a button pointing at one lands on an
+  unfocused diagram and reads as broken.
+
+The last is answered from Truss's exclusion config rather than from a payload:
+the question is asked once per button and `Truss::payload()` reads the whole
+schema to answer it. Any no removes the button rather than disabling it, because
+there is nothing the viewer could do about any of the three.
+
+**The half that needs the panel's own knowledge waits for v0.2**: reading every
+registered resource to report which tables no resource manages. That is a
+finding rather than a link, and it needs a panel that genuinely has resources.
 
 ## Scope by version
 
-**v0.1**: the diagram, the focus picker, and the panel's theme. Dogfoodable
-against a scratch Filament 5 panel pointed at a real schema, because an ER
-diagram needs a real schema and not real resources.
+**v0.1**: the diagram, the focus picker, the panel's theme, and the focus deep
+link from a resource. Dogfoodable against a scratch Filament 5 panel pointed at a
+real schema, because an ER diagram needs a real schema and not real resources.
 
-**v0.2**: resource linking, including the unmapped-table finding. This one needs
-a panel that genuinely has resources.
+**v0.2**: the rest of resource linking, including the unmapped-table finding.
+This one needs a panel that genuinely has resources.
 
 **Later, undecided**: the structural findings as a page of their own. Truss
 already produces them and `Truss::payload()` already carries them, so the cost is

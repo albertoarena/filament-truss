@@ -141,6 +141,32 @@ from it fails silently in the browser rather than loudly in the suite.
       is what makes excluding a table to keep it off a shared panel worth
       relying on.
 
+## 3b. The focus deep link, which is a link and not a feature
+
+Needs a panel with at least one resource, so the demo panel rather than a scratch
+one. Nothing of ours runs in the browser here: the button builds a URL and Truss
+applies `focus` on load, which is exactly why the failure mode is a silent
+no-op rather than an error.
+
+- [ ] A resource using `HasViewInSchemaAction` shows the **View in schema**
+      button where the panel put it, and following it lands on the diagram with
+      **that table focused**, at the configured depth, not on the whole diagram.
+- [ ] The focus picker and the footer agree with the URL: the picker shows the
+      table selected, the footer reads the narrowed count (`2 of 8`).
+- [ ] Reload the focused URL: it comes back focused. It is an address, so it
+      bookmarks and it shares.
+- [ ] Clearing focus on the page leaves the URL Truss leaves it, and this package
+      does not fight it.
+- [ ] **A viewer who fails the access rule sees no button at all**, not a
+      disabled one. Check with `truss.enabled` false, which is the fastest way to
+      make the page inaccessible without touching a gate.
+- [ ] **A resource whose table Truss excludes shows no button.** Add its table to
+      `truss.excluded_tables`, reload, and confirm the button is gone rather than
+      present and inert. Confirm by hand what it protects against: visit
+      `?focus=<excluded table>` directly and watch it do nothing.
+- [ ] On a second panel **without** the plugin registered, a resource using the
+      trait still renders: no button, and no error.
+
 ## 4. The theme, which is the panel's
 
 - [ ] Toggle the panel between light and dark: the diagram follows immediately,
