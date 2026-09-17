@@ -9,7 +9,12 @@ return [
     // A panel user arriving here has usually never heard of Truss, and a
     // diagram with no caption is a picture rather than an answer. This says
     // where it comes from and what it will never contain.
-    'subheading' => 'The database this panel runs on, read live. Structure only: tables, columns, indexes and keys, and never any row data.',
+    //
+    // It names Laravel Truss outright, because the rest of the page does not:
+    // before this the only mention was the label on a link. A page that reads
+    // the whole schema should say what is doing the reading, in the line the
+    // reader is already on.
+    'subheading' => 'The database this panel runs on, read live by Laravel Truss. Structure only: tables, columns, indexes and keys, and never any row data.',
 
     'documentation_label' => 'Documentation',
 

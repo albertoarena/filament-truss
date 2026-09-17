@@ -34,6 +34,14 @@ it('says where the diagram comes from, and what it will never show', function ()
         ->and(strtolower($subheading))->toContain('never');
 });
 
+it('names the package that is reading the database', function () {
+    // The page reads the whole schema and, until this, named nothing: the only
+    // mention of Truss was the label on a link to it. Somebody deciding whether
+    // to trust a page like this wants to know what is doing the reading, and the
+    // subheading is where they are already looking.
+    expect((new SchemaPage)->getSubheading())->toContain('Laravel Truss');
+});
+
 it('offers the project as a link away from the panel', function () {
     $actions = headerActions(new SchemaPage);
 

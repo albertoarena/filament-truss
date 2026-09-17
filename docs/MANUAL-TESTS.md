@@ -199,9 +199,11 @@ no-op rather than an error.
       focused.
 - [ ] Open the export menu and hover an item: the highlight is a panel grey, not
       a pale blue. An unavailable export does **not** light up on hover.
-- [ ] The heading carries a subheading saying the diagram is read live and is
-      structure only, and a **Documentation** link sits opposite it, opening in a
-      new tab.
+- [ ] The heading carries a subheading saying the diagram is read live **by
+      Laravel Truss** and is structure only, and a **Documentation** link sits
+      opposite it, opening in a new tab. The subheading is the only place the
+      page names the package, so a panel that has translated it should still be
+      naming something.
 - [ ] Register the plugin with `->documentationLink(false)`: the link is gone and
       the subheading stays.
 - [ ] **Dark operating system, light panel: the diagram is light.** This is the
