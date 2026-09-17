@@ -64,6 +64,12 @@ checklist that stands in for a browser test, and it is a release gate.
 - **Truss stays Filament-free.** Nothing in this package may require a change
   that gives Truss a Filament dependency. That separation is the whole reason
   there are two packages.
+- **Once the repository is public, work lands through a pull request.** `main` is
+  protected: no force pushes, no deletions, and every check must pass. The
+  maintainer can still push directly, and that is not a licence to. **The one
+  exception is a markdown-only change**, which may go straight to `main`.
+  Anything touching code, tests, config, CI or the shipped assets goes through a
+  PR, one-line fixes included.
 - **Git commits:** `type: short subject` (max 50 chars), then a body paragraph
   explaining what and why, not how. Never include "Generated with Claude Code" or
   "Co-Authored-By: Claude". Use a heredoc for multi-line commit messages. The
