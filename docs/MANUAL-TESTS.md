@@ -86,11 +86,16 @@ that depend on markup this package reproduces rather than owns.
       indexes, and closes again.
 - [ ] Legend opens and closes.
 - [ ] Export: PNG and SVG both download and both open.
-- [ ] Export: Markdown, DBML, JSON and CSV are **offered, not greyed out**, and
+- [ ] Export: the server-backed formats are **offered, not greyed out**, and
       each downloads. Greyed out means the page is not declaring the export
-      endpoint, so Truss believes it has no server. The four are generated in the
+      endpoint, so Truss believes it has no server. These are generated in the
       application, unlike PNG and SVG, which are drawn from the DOM and work
       either way.
+
+      **They live in two menus, which is easy to misread as a missing feature.**
+      The toolbar's export button offers PNG, SVG, Data dictionary (Markdown)
+      and DBML. **JSON and CSV are in the table popover**, with Copy JSON and
+      Download Markdown, reached by clicking a table's name. Check both.
 - [ ] Diff: change a column in the database without re-baselining, reload, and
       the diff button appears with the change listed.
 - [ ] Health: the findings panel lists `truss:doctor` findings with a count on the
@@ -269,7 +274,8 @@ no-op rather than an error.
       in the page, so there is nothing to ask for.
 - [ ] A table with a column default or comment containing `</script>` does not
       break the page. Truss reads comments as structure, so this is not
-      hypothetical.
+      hypothetical. **Needs MySQL or Postgres**: SQLite has no column comments,
+      so a SQLite panel can only exercise the default half of this.
 - [ ] Nothing on the page writes: no action, no form, no link that changes the
       database.
 
@@ -279,7 +285,10 @@ no-op rather than an error.
       failing.
 - [ ] Cache store unreachable: the page still renders, with the flag Truss sets
       for it.
-- [ ] SQLite fallback in play: the footer flag shows.
+- [ ] SQLite fallback in play: the footer flag shows. **Running on SQLite is not
+      enough**: the payload's `fallback` is false on an ordinary SQLite
+      connection, so this needs the case where Truss could not introspect
+      normally and fell back.
 
 ## Recording a pass
 
@@ -312,8 +321,38 @@ it is not section 3b. **Nothing above was seen.** Whether the link actually land
 on a focused diagram, whether the picker and the footer agree with it, and
 whether it survives a reload are all still open.
 
-**Not covered and still needing a person:** that the six exports actually download
-and open (a download was deliberately not triggered), the diff and health panels,
-the large-schema banner, the non-default and custom panel themes with the compact
-modifier, the narrow-viewport more-controls button, and the two judgement calls in
-section 4 about the grey steps and row readability.
+**17/09/2026, a driven pass.** Truss v1.13.0, Filament 5, Laravel 13, Chrome,
+against the demo panel (16 tables, 8 drawable, SQLite). Driven from the browser
+by script and read back from the DOM and from computed styles, so everything
+below is measured rather than seen, except where it says otherwise.
+
+Passed: **section 1** asset loading (all nine of `truss.css`, `truss.js`,
+`filament-truss.css`, `mermaid.min.js`, `mermaid-definition.js` and the four
+fonts at 200) and the guest redirect to the panel login; **`truss.enabled`
+false** answers 403 and drops the navigation item. **Section 2** in full bar the
+judgement calls: navigation label, containment (no Truss stylesheet loads on
+another panel page at all, and that page keeps Filament's own background and
+Inter), no horizontal scroll, the footer count and time, and the narrow-viewport
+more-controls button at 606px opening Focus, Depth, Laravel types and Show hidden
+tables. **Section 3**: filter (8 to 2 tables, address follows), the focus
+combobox by keyboard, depth 1 to 2 to 3 and back (4, 6, 6, 4 tables), Laravel
+types both ways, the table popover with its menu and Escape closing it, the
+legend, the health panel with seven findings and its maximise, and the
+large-schema banner with `warn_above` temporarily lowered to 5. **Section 3b**
+in full except the eye: the button, the focused landing, picker and footer
+agreeing with the address, and a reload coming back focused. **Section 5**: the
+payload carries structure and no row data (five known values from the seeded data
+searched for and absent), and no schema endpoint is requested. **Section 6**: no
+baseline recorded, and the page renders with the diff button simply hidden.
+
+**Three findings, and the checklist was wrong about three other things**, all
+corrected above: the export formats live in two menus rather than one, SQLite
+alone does not exercise the fallback flag, and the `</script>` comment case needs
+an engine with column comments.
+
+**Not covered and still needing a person**, after the driven pass above: that the
+exports actually download and open (no download was ever triggered), the diff
+panel (the demo has no baseline, so it needs `truss:baseline` and then a schema
+change), the non-default and custom panel themes with the compact modifier, a
+changed panel primary, the two judgement calls in section 4 about the grey steps
+and row readability, and everything in section 6 beyond the no-baseline case.
