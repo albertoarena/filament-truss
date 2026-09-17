@@ -334,16 +334,26 @@ no-op rather than an error.
       diagram must be **complete**, since the snapshot was read live rather than
       partially: it is a notice about speed and never about the schema.
 - [ ] SQLite fallback in play: the banner says the schema was replayed and column
-      types may be approximate. **Running on SQLite is not enough**: `fallback` is
+      types may be approximate, and the footer carries a **SQLite fallback**
+      flag beside the count. **Running on SQLite is not enough**: `fallback` is
       false on an ordinary SQLite connection. Truss falls back only when the
-      configured connection is **unreachable**, which it then replaces by
-      replaying the migrations on in-memory SQLite.
+      configured connection is **unreachable**, and then replays the app's
+      migrations on in-memory SQLite.
 
-      **Not reachable in a panel whose authentication uses that same
-      connection**, which is most of them: breaking the connection logs you out
-      before the page renders. It needs a panel whose users and sessions live
-      elsewhere, so treat it as upstream's to cover unless such a panel is at
-      hand, and say so rather than ticking it.
+      **The panel has to authenticate off a different connection from the one
+      Truss reads**, or breaking it logs you out before the page renders. The
+      recipe, which worked on the demo:
+
+      - a second connection in `config/database.php` pointing at the real
+        database, `protected $connection` on the `User` model naming it, and
+        `SESSION_CONNECTION` set to it
+      - `DB_CONNECTION=mysql` with `DB_PORT` on a dead port, so the default is
+        genuinely unreachable rather than merely wrong
+      - `CACHE_STORE=file`, since the database store would use the broken default
+      - **restart `artisan serve`**, which reads `.env` once at boot
+
+      Expect the resource pages to break while this is in place. They still use
+      the broken connection, and the schema page is the subject.
 
 ## Recording a pass
 
@@ -452,5 +462,17 @@ refuses the whole panel outside `local` unless the user model implements
 `canAccessPanel()`, so without that every page 403s and the 403 you are looking
 at is not the one you are testing.
 
-**What is left is one item, and it cannot be ticked here**: the SQLite fallback,
-for the reason given in section 6. Everything else in this file has been run.
+**Section 6 finished too, fallback included.** With the panel's own data moved to
+a second connection and the default pointed at a dead port, the page drew the
+schema from the migration replay: `fallback` true, no skipped migrations, the
+warning banner, and the footer reading `8 of 15 tables  SQLite fallback`. Fifteen
+rather than sixteen because the replay never creates the `migrations` table
+itself, which is correct rather than a loss.
+
+Worth knowing for the next run: on the replayed schema the doctor reported **two
+errors and five info findings** where the real database gives seven errors, so
+the table markers came back blue rather than red. That is the info family of the
+palette painting canvas markers rather than a banner, and it is data-dependent,
+not a defect.
+
+**Every item in this file has now been run.**
