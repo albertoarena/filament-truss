@@ -430,5 +430,27 @@ comfortable in both.
 whole schema still drew, and the warning banner appeared in Filament's warning
 colours).
 
+**Section 1 finished the same day, in a production environment.** With
+`APP_ENV=production`, `TRUSS_ENABLED=true` and an empty `TRUSS_ALLOWED_EMAILS`,
+signed in as an admin who could use the rest of the panel: **the navigation item
+was absent, every link to the page was gone, and the URL answered 403.** Adding
+that admin's address to the allow list and restarting made the page visible,
+with `truss.css`, `truss.js` and `mermaid.min.js` all at 200, which is the half
+of the parity rule that is functional rather than cosmetic.
+
+**Two things that pass had never been seen before.** `reveal_excluded` is false
+outside `local`, so the Show hidden tables toggle was gone **and the payload
+carried 8 tables rather than 16**: the hidden ones did not leave the server,
+while the footer still said `8 of 16`. And the demo's own dashboard card dropped
+its link to the page, because it asks the page the same question the page asks
+itself.
+
+**Two traps worth knowing for next time.** `php artisan serve` reads `.env` once
+at boot, so changing the environment means restarting the server or the page
+keeps answering as `local`, which reads exactly like a broken gate. And Filament
+refuses the whole panel outside `local` unless the user model implements
+`canAccessPanel()`, so without that every page 403s and the 403 you are looking
+at is not the one you are testing.
+
 **What is left is one item, and it cannot be ticked here**: the SQLite fallback,
 for the reason given in section 6. Everything else in this file has been run.
