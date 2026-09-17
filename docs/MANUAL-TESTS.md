@@ -258,8 +258,18 @@ no-op rather than an error.
       beats Filament's layered one and there is nothing to fall back to. It is
       invisible in light, where the canvas is white anyway, so it has to be
       checked in dark.
-- [ ] A first-party theme that is not the default, plus the compact modifier: the
-      diagram still looks like part of the panel.
+- [ ] **The panel's own layout options**, one at a time. There is no compact
+      modifier in Filament 5; what exists and actually stresses this page is:
+
+      - `->topNavigation()`: no sidebar, and the header sits somewhere else. The
+        box must still end where the page ends, which is the measured height
+        doing its job under a layout it has never seen.
+      - `->maxContentWidth(Width::Full)`: the container gets the whole window.
+      - `->sidebarCollapsibleOnDesktop()`: collapse and expand it. The width
+        changes, the top does not, and nothing may overflow sideways.
+      - `->font('Poppins')`: the heading, the toolbar labels, the inputs and the
+        footer follow the panel. **The canvas and the legend keys must not**,
+        because they are notation.
 - [ ] A custom panel theme: same question, and the honest one, since this is what
       most real panels run.
 - [ ] **Change the panel's primary colour** (`->colors(['primary' => Color::Teal])`)
