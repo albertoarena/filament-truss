@@ -328,12 +328,22 @@ no-op rather than an error.
 
 - [ ] No baseline recorded: the page still renders and says so, rather than
       failing.
-- [ ] Cache store unreachable: the page still renders, with the flag Truss sets
-      for it.
-- [ ] SQLite fallback in play: the footer flag shows. **Running on SQLite is not
-      enough**: the payload's `fallback` is false on an ordinary SQLite
-      connection, so this needs the case where Truss could not introspect
-      normally and fell back.
+- [ ] Cache store unreachable: the page still renders, with the warning banner
+      Truss shows for it. Reachable with `CACHE_STORE=file` and the cache
+      directory made unwritable, as long as sessions live somewhere else. The
+      diagram must be **complete**, since the snapshot was read live rather than
+      partially: it is a notice about speed and never about the schema.
+- [ ] SQLite fallback in play: the banner says the schema was replayed and column
+      types may be approximate. **Running on SQLite is not enough**: `fallback` is
+      false on an ordinary SQLite connection. Truss falls back only when the
+      configured connection is **unreachable**, which it then replaces by
+      replaying the migrations on in-memory SQLite.
+
+      **Not reachable in a panel whose authentication uses that same
+      connection**, which is most of them: breaking the connection logs you out
+      before the page renders. It needs a panel whose users and sessions live
+      elsewhere, so treat it as upstream's to cover unless such a panel is at
+      hand, and say so rather than ticking it.
 
 ## Recording a pass
 
