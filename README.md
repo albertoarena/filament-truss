@@ -1,5 +1,18 @@
 # Filament Truss
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/albertoarena/filament-truss/main/art/filamentphp/image-dark.jpg" class="filament-hidden">
+  <img src="https://raw.githubusercontent.com/albertoarena/filament-truss/main/art/filamentphp/image-light.jpg" alt="Filament Truss" class="filament-hidden">
+</picture>
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/albertoarena/filament-truss.svg)](https://packagist.org/packages/albertoarena/filament-truss)
+[![Tests](https://github.com/albertoarena/filament-truss/actions/workflows/run-tests.yml/badge.svg)](https://github.com/albertoarena/filament-truss/actions/workflows/run-tests.yml)
+[![Total Downloads](https://img.shields.io/packagist/dt/albertoarena/filament-truss.svg)](https://packagist.org/packages/albertoarena/filament-truss)
+
+> **Not released yet.** The first tag will be `v0.1.0`, and until it exists
+> `composer require` will not find this package. Everything below describes what
+> that release installs.
+
 A live **ER diagram (ERD)** of your real database, as a native page inside a
 [Filament](https://filamentphp.com) panel. Built on
 [Laravel Truss](https://github.com/albertoarena/laravel-truss), which reads the
@@ -8,11 +21,7 @@ database you actually have rather than the migrations you think you ran.
 **Structure only. No row data is ever read, sent, or rendered.** That is the core
 promise of Truss and this package inherits it without exception.
 
-## Status: in development, nothing released
-
-There is no tagged version and nothing to install yet. This repository exists so
-the work has a home; treat everything here as subject to change until a `v0.1.0`
-tag appears.
+[![Read the docs](https://img.shields.io/badge/Read%20the%20docs-f59e0b?style=for-the-badge)](https://trussphp.com)
 
 ## What it is, and what it is not
 
@@ -30,24 +39,104 @@ gains no write path just because it lives inside an admin panel.
 
 ## Requirements
 
-- PHP 8.2+
-- Laravel 12+
-- Filament 5+
-- `albertoarena/laravel-truss` v1.13.0+, which is where the schema, the diff and
+- PHP `^8.2`
+- Laravel `^12.0 | ^13.0`
+- Filament `^5.0`
+- `albertoarena/laravel-truss` `^1.13`, which is where the schema, the diff and
   the structural findings come from
 
 Filament 4 is deliberately not supported. See [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
-## Authorization
+## Installation
+
+```bash
+composer require albertoarena/filament-truss
+```
+
+Laravel Truss comes with it as a regular dependency, so there is nothing else to
+install and no asset to publish.
+
+Register the plugin on your panel:
+
+```php
+use AlbertoArena\FilamentTruss\FilamentTrussPlugin;
+use Filament\Panel;
+use Filament\PanelProvider;
+
+class AdminPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            // ...
+            ->plugin(FilamentTrussPlugin::make());
+    }
+}
+```
+
+The page appears in the panel navigation as **Database schema**, at
+`/database-schema` under your panel's path. There is nothing to configure for the
+diagram itself: it follows Truss's config and the panel's theme.
+
+## Who can see the page
 
 **A Filament page does not pass through Truss's own middleware**, so this package
-has to ask the same questions itself. The rule it follows is that the page is
-visible exactly when the Truss dashboard would be visible to the same user: the
-`truss.enabled` switch, then the `viewTruss` gate, and `local` open as Truss
-leaves it.
+asks the same questions itself. The rule is that the page is visible exactly when
+the Truss dashboard would be visible to the same user, in the same order:
+
+1. `truss.enabled`, which defaults to **on in `local` and off everywhere else**.
+   Set `TRUSS_ENABLED=true` to run it anywhere else.
+2. In `local`, that is all: Truss leaves the dashboard open there and so does
+   this page.
+3. Everywhere else, the `viewTruss` gate. Truss ships a default that admits the
+   emails in `TRUSS_ALLOWED_EMAILS`, and an application can define its own gate
+   instead:
+
+   ```php
+   Gate::define('viewTruss', fn ($user) => $user->isAdmin());
+   ```
 
 Being allowed into the panel is not the same as being allowed to read the
-database structure, and this package never treats it as such.
+database structure, and this package never treats it as such. Both switches are
+Truss's, so a viewer who can see the Truss dashboard can see this page, and a
+viewer who cannot, cannot.
+
+## Open the diagram on a table
+
+A resource can offer a button that opens the diagram with **its own table already
+focused**. Add the trait to the resource and put the action where you want it:
+
+```php
+use AlbertoArena\FilamentTruss\Actions\Concerns\HasViewInSchemaAction;
+use Filament\Resources\Resource;
+
+class BookResource extends Resource
+{
+    use HasViewInSchemaAction;
+
+    // ...
+}
+```
+
+```php
+// In a page's header, a table's row actions, or anywhere else that takes an action
+BookResource::viewInSchemaAction();
+```
+
+Put the trait on a base resource class and every resource extending it is opted
+in. Or skip the trait and name the table yourself:
+
+```php
+use AlbertoArena\FilamentTruss\Actions\ViewInSchemaAction;
+
+ViewInSchemaAction::make()->forModel(Book::class);
+ViewInSchemaAction::make()->forTable('books');
+```
+
+**The button removes itself rather than disabling itself** when the panel has no
+such page, when the viewer fails the check above, or when the table is one Truss
+excludes from the diagram. In each case there is nothing the viewer could do
+about it, and a greyed control invites them to try.
 
 ## Hidden tables
 
@@ -64,9 +153,15 @@ parameter and no plugin option that puts it back.
 
 ## Configuration
 
-There is nothing to configure for the diagram itself: it follows Truss's config
-and the panel's theme. The one option is the link to this project in the page
-header, which is on by default and off in one call:
+The diagram reads Truss's config, which is the single place to change what is
+drawn. Publish it if you have not already:
+
+```bash
+php artisan vendor:publish --tag=truss-config
+```
+
+The one option this package adds is the link to the project in the page header,
+which is on by default and off in one call:
 
 ```php
 $panel->plugin(FilamentTrussPlugin::make()->documentationLink(false));
@@ -74,25 +169,58 @@ $panel->plugin(FilamentTrussPlugin::make()->documentationLink(false));
 
 ## Documentation
 
+**The user guide lives at [trussphp.com](https://trussphp.com)**, in a section of
+its own alongside the Laravel Truss documentation. This README stays the source
+of truth for installing and configuring the package, because it is what Packagist
+and the plugin directory render, and the site carries the narrative, the
+screenshots and the guide.
+
+In this repository:
+
 - [`docs/DESIGN.md`](docs/DESIGN.md): architecture, and how the page gets its data
 - [`docs/DECISIONS.md`](docs/DECISIONS.md): why it is built this way
 - [`CONTRIBUTING.md`](CONTRIBUTING.md): how to work on it
-- [`CHANGELOG.md`](CHANGELOG.md): what changed, once anything has
+- [`CHANGELOG.md`](CHANGELOG.md): what changed
 
-**The user guide will live at [trussphp.com](https://trussphp.com)**, in a
-section of its own alongside the Laravel Truss documentation, rather than being
-duplicated here. That site is built from a separate repository,
-`albertoarena/laravel-truss-docs`, and it reads from the latest **release**, so
-the section appears once there is something installable.
+## Testing
 
-The split is deliberate: this README stays the source of truth for installing and
-configuring the package, because that is what Packagist and the plugin directory
-render, and the site carries the narrative, the screenshots and the guide.
+```bash
+composer test   # Pest
+composer lint   # Laravel Pint
+npm test        # Vitest, over the client-side files
+```
+
+Rendering and interaction in a real panel are covered by hand, against
+[`docs/MANUAL-TESTS.md`](docs/MANUAL-TESTS.md), because neither suite has a panel
+to render into.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for recent changes.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security
 
 Report a vulnerability privately to **hello@albertoarena.it** rather than in a
 public issue.
+
+## Related packages
+
+- [albertoarena/laravel-truss](https://github.com/albertoarena/laravel-truss) is
+  the engine: the schema reader, the diagram, the diff and the structural doctor,
+  with a dashboard and a CLI of its own.
+- [albertoarena/filament-event-sourcing](https://github.com/albertoarena/filament-event-sourcing)
+  brings `spatie/laravel-event-sourcing` into a Filament panel.
+
+## 📬 Stay updated
+
+Practical notes on Laravel, database tooling and AI-assisted development, roughly
+once a month. No spam.
+
+**[Subscribe →](https://albertoarena.it/subscribe/?utm_source=github&utm_medium=readme&utm_campaign=newsletter&utm_content=filament-truss)**
 
 ## Credits
 
