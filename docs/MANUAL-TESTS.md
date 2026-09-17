@@ -184,6 +184,16 @@ no-op rather than an error.
       same size and the same stroke, with no character standing in for an icon.
       Narrow the window until the more-controls button appears and check it too,
       since it is the one that is hidden at desk width.
+- [ ] **They carry no box**, like the filter and column buttons in a resource
+      table header, and unlike the Filter and Depth fields beside them, which
+      keep theirs. Hovering darkens the icon and never fills it.
+- [ ] **Open one**: it fills with the panel primary and stays filled while the
+      pointer is over it, which is how a person tells which panel is open when
+      the legend and the health panel overlay the canvas. Tab to one: the focus
+      ring is now the only other chrome it has.
+- [ ] The **health count badge is whole** with the box gone. It rides on the
+      button's corner and has been clipped before, against the container's own
+      `overflow: hidden` edge.
 - [ ] Focus a control: a solid 2px ring in the panel's primary, no border, and
       the shade steps down in dark rather than glaring.
 - [ ] The two checkboxes are Filament's own, which is to say rounded with a ring

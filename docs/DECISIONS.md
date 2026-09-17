@@ -316,6 +316,34 @@ margin that assumes the padding of a Filament container that is not there.
 toolbar markup is reproduced in this package, so hanging our chrome on a class of
 our own means an upstream rename costs the Blade and not the stylesheet as well.
 
+## The utility buttons are toggles, so they lose the box the fields keep
+
+**Context:** the entry above gave the inputs, the labels and the utility buttons
+the same treatment, on the argument that rounding the fields and leaving the
+buttons at Truss's 2px would read as a mistake. Side by side with a resource list
+that turned out to be the wrong grouping. **Filament draws the line elsewhere:**
+in its own table header the search box carries a box because it is a field, and
+the filter and column buttons carry none because they are icon toggles. Export,
+health and legend are toggles, and they had the field treatment. It was only
+legible at all while the bar itself was grey; once the bar went white it was the
+difference a person noticed first.
+**Decision:** take Filament's icon button recipe for the three, read from the
+panel's compiled stylesheet: 36 by 36 at `--radius-lg`, `--gray-500`, no
+background, no ring, no shadow, no border, darkening to `--gray-600` on hover,
+with a 2px primary ring on focus-visible. Keep the fields exactly as they are.
+**Trade-off:** less of Truss's identity in the toolbar, which was the argument for
+leaving it. What replaced it is Filament's own distinction between a field and a
+toggle, which is a better thing for the page to be saying than a border.
+
+**Two deliberate departures.** Filament's `margin: calc(var(--spacing) * -2)` is
+not copied, for the reason the entry above already rejected `fi-icon-btn`: it
+assumes a container's padding that this toolbar does not have. And **Truss's open
+state is kept**, filled in the panel primary on `aria-expanded="true"`. Filament's
+dropdowns hang off their trigger and need no such state; the legend and the health
+panel overlay the canvas, so which one is open is worth saying. With the box gone
+that fill is the only chrome these buttons ever carry: nothing until open, then
+filled.
+
 ## Borrow Heroicons for three toolbar glyphs, and keep two of Truss's
 
 **Context:** the toolbar's five utility buttons were Truss's, and two of them

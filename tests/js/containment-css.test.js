@@ -271,6 +271,68 @@ describe('the toolbar, wearing the panel\'s own controls', () => {
   });
 });
 
+describe('the utility buttons, which are toggles and not fields', () => {
+  // Filament draws the line here and this package was on the wrong side of it.
+  // In a table header the search box carries a box because it is a field, and
+  // the filter and column buttons carry none because they are icon toggles.
+  // Export, health and legend are toggles, and they had the field treatment.
+  //
+  // Read out of the panel's compiled stylesheet on 17/09/2026:
+  // `.fi-icon-btn` is 36 by 36 at `--radius-lg`, `--gray-500`, no background,
+  // no ring, no shadow and no border, darkening to `--gray-600` on hover, with
+  // a 2px primary ring on focus-visible.
+  //
+  // The one thing deliberately not copied is its `margin: -8px`, which assumes
+  // the padding of a Filament container. The toolbar has padding of its own.
+  const util = rule('#truss-app.truss-embed .ft-controls .truss-util');
+
+  it('carries no box at all, the way Filament leaves an icon button', () => {
+    // `transparent` rather than nothing, because Truss fills these from
+    // `--bp-field` and a rule that says nothing leaves that fill in place.
+    expect(util).toMatch(/background:\s*transparent/);
+    expect(util).toMatch(/box-shadow:\s*none/);
+    expect(util).toMatch(/border:\s*0/);
+  });
+
+  it('is square at Filament\'s own icon button size', () => {
+    expect(util).toMatch(/width:\s*2\.25rem/);
+    expect(util).toMatch(/height:\s*2\.25rem/);
+  });
+
+  it('darkens on hover rather than turning the panel primary', () => {
+    // Filament shifts `--gray-500` to `--gray-600` and never fills. Colouring
+    // the icon primary was readable while the button had a box to sit in.
+    expect(rule('#truss-app.truss-embed .ft-controls .truss-util:hover')).toMatch(
+      /color:\s*var\(--gray-600\)/
+    );
+    expect(
+      rule(':root.dark #truss-app.truss-embed .ft-controls .truss-util:hover')
+    ).toMatch(/color:\s*var\(--gray-400\)/);
+  });
+
+  it('keeps a focus ring, which is now the only chrome it has', () => {
+    // With the box gone this is what a keyboard user has left, so it matters
+    // more here than on the inputs.
+    expect(
+      rule('#truss-app.truss-embed .ft-controls .truss-util:focus-visible')
+    ).toMatch(/var\(--primary-600\)/);
+    expect(
+      rule(':root.dark #truss-app.truss-embed .ft-controls .truss-util:focus-visible')
+    ).toMatch(/var\(--primary-500\)/);
+  });
+
+  it('still says which panel is open', () => {
+    // Kept from Truss rather than dropped with the rest. Filament's dropdowns
+    // hang off their trigger, so they need no open state; the legend and the
+    // health panel overlay the canvas, so which one is open is worth saying.
+    // With everything else gone, this is the only chrome these buttons ever
+    // carry: nothing until open, then filled.
+    expect(
+      rule('#truss-app.truss-embed .ft-controls .truss-util[aria-expanded="true"]')
+    ).toMatch(/background:\s*var\(--primary-600\)/);
+  });
+});
+
 describe('the toolbar, given room to stand in', () => {
   // The bar itself, not the controls in it, so the assertions below cannot pass
   // on the padding of an input.

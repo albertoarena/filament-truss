@@ -331,31 +331,67 @@ body {
     accent-color: var(--primary-500);
 }
 
-/* The utility buttons are the same visual family: rounding the inputs and
-   leaving these at 2px reads as a mistake rather than as a choice. */
+/*
+ * The utility buttons, which are toggles and not fields.
+ *
+ * Filament draws a line in its own table header and this sheet was on the wrong
+ * side of it: the search box carries a box because it is a field, and the filter
+ * and column buttons carry none because they are icon toggles. Export, health
+ * and legend are toggles, and they had the field treatment, which was only ever
+ * legible because the bar itself used to be grey.
+ *
+ * Read out of the panel's compiled stylesheet rather than guessed: `.fi-icon-btn`
+ * is 36 by 36 at `--radius-lg`, painted `--gray-500` with no background, no ring,
+ * no shadow and no border, darkening to `--gray-600` on hover, and taking a 2px
+ * primary ring on focus-visible. Filament never fills one on hover.
+ *
+ * The one thing deliberately not copied is its `margin: calc(var(--spacing) *
+ * -2)`, which assumes the padding of a Filament container. This toolbar has
+ * padding of its own, and borrowing that margin standalone would pull the
+ * buttons into the bar's edge.
+ *
+ * `background: transparent` rather than no rule at all, because Truss fills
+ * these from `--bp-field` and saying nothing leaves that fill in place.
+ */
 #truss-app.truss-embed .ft-controls .truss-util {
+    width: 2.25rem;
     height: 2.25rem;
-    color: var(--gray-600);
-    background: var(--color-white);
+    color: var(--gray-500);
+    background: transparent;
     border: 0;
     border-radius: var(--radius-lg);
-    box-shadow:
-        0 0 0 1px color-mix(in oklab, var(--gray-950) 10%, transparent),
-        0 1px 3px 0 rgb(0 0 0 / 0.1),
-        0 1px 2px -1px rgb(0 0 0 / 0.1);
+    box-shadow: none;
 }
 
 :root.dark #truss-app.truss-embed .ft-controls .truss-util {
-    color: var(--gray-400);
-    background: color-mix(in oklab, var(--color-white) 5%, transparent);
+    color: var(--gray-500);
 }
 
 #truss-app.truss-embed .ft-controls .truss-util:hover {
-    color: var(--primary-600);
+    color: var(--gray-600);
 }
 
-/* Restated rather than left to Truss: the rules above out-specify its own
-   open-state colours, so without this an open menu stops looking open. */
+:root.dark #truss-app.truss-embed .ft-controls .truss-util:hover {
+    color: var(--gray-400);
+}
+
+/* With the box gone this is what a keyboard user has left, so it matters more
+   here than on the inputs, where the ring is a second signal on a control that
+   is already outlined. */
+#truss-app.truss-embed .ft-controls .truss-util:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-600);
+}
+
+:root.dark #truss-app.truss-embed .ft-controls .truss-util:focus-visible {
+    box-shadow: 0 0 0 2px var(--primary-500);
+}
+
+/* Kept from Truss rather than dropped with the rest, and restated because the
+   rules above out-specify its own open-state colours. Filament's dropdowns hang
+   off their trigger and need no open state; the legend and the health panel
+   overlay the canvas, so which one is open is worth saying. Last in the block on
+   purpose: an open button stays filled while the pointer is over it. */
 #truss-app.truss-embed .ft-controls .truss-util[aria-expanded="true"] {
     color: var(--color-white);
     background: var(--primary-600);
