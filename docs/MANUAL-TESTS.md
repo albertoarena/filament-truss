@@ -27,8 +27,13 @@ the large-schema path is reachable.
 
 ```bash
 composer require albertoarena/filament-truss
-php artisan truss:baseline   # so the diff panel has something to compare against
 ```
+
+**The diff panel needs a schema with a history**, not a command. There is no
+`truss:baseline`: Truss records the pre-migration schema as the baseline
+whenever migrations finish, so a database built by a single migration has
+nothing to compare against and the panel stays hidden. Run one more migration,
+however small, and the panel reports what it did.
 
 Register the plugin on the panel, then confirm the versions you tested with:
 
@@ -99,8 +104,10 @@ that depend on markup this package reproduces rather than owns.
       The toolbar's export button offers PNG, SVG, Data dictionary (Markdown)
       and DBML. **JSON and CSV are in the table popover**, with Copy JSON and
       Download Markdown, reached by clicking a table's name. Check both.
-- [ ] Diff: change a column in the database without re-baselining, reload, and
-      the diff button appears with the change listed.
+- [ ] Diff: run a migration that changes something, reload, and the diff button
+      appears with the change listed, the table marked in the diagram, and the
+      panel headed "Changes since last migration". Every migration re-baselines,
+      so the panel describes the most recent one rather than accumulating.
 - [ ] Health: the findings panel lists `truss:doctor` findings with a count on the
       button, and maximises.
 - [ ] A schema above `truss.large_schema.warn_above` shows the warning banner.
@@ -359,9 +366,19 @@ corrected above: the export formats live in two menus rather than one, SQLite
 alone does not exercise the fallback flag, and the `</script>` comment case needs
 an engine with column comments.
 
-**Not covered and still needing a person**, after the driven pass above: that the
-exports actually download and open (no download was ever triggered), the diff
-panel (the demo has no baseline, so it needs `truss:baseline` and then a schema
-change), the non-default and custom panel themes with the compact modifier, a
-changed panel primary, the two judgement calls in section 4 about the grey steps
-and row readability, and everything in section 6 beyond the no-baseline case.
+**Also 17/09/2026, and these two are now closed.** **The exports download and the
+files are correct**, confirmed by hand rather than by script. **The diff panel**
+was opened after a migration added `books.subtitle` to the demo: the button
+appears, the panel reads "Changes since last migration" with
+`+ column subtitle (varchar)` under a Changed badge, the table is marked in the
+diagram, and the panel is in the panel's typeface while the column name stays
+monospaced.
+
+**A third correction to this file:** the setup section called for
+`php artisan truss:baseline`, and no such command exists. Baselines are written
+by Truss when migrations finish. Corrected above.
+
+**Not covered and still needing a person**: the non-default and custom panel
+themes with the compact modifier, a changed panel primary, the two judgement
+calls in section 4 about the grey steps and row readability, and everything in
+section 6 beyond the no-baseline case.
