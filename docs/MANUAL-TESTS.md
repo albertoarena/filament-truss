@@ -279,6 +279,19 @@ across a full load, a reveal, a filter and a focus. Muting is `opacity: 0.55` on
 the node group, so it is palette independent and holds in both themes by
 construction rather than by luck.
 
+**17/09/2026, machine-checked only, and it does not count as a pass.** Truss
+v1.13.0, Filament 5, Laravel 13, against the demo panel with the focus button on
+two resources. Fetched as a signed-in user and read as HTML rather than looked
+at: the button renders on both list pages, its URL is
+`/admin/database-schema?focus=<table>`, and adding that table to
+`truss.excluded_tables` removes the button from that resource while leaving the
+other one's in place.
+
+That is the guard working end to end in a real panel, which is worth knowing, and
+it is not section 3b. **Nothing above was seen.** Whether the link actually lands
+on a focused diagram, whether the picker and the footer agree with it, and
+whether it survives a reload are all still open.
+
 **Not covered and still needing a person:** that the six exports actually download
 and open (a download was deliberately not triggered), the diff and health panels,
 the large-schema banner, the non-default and custom panel themes with the compact
