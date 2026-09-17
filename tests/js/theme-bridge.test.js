@@ -39,9 +39,23 @@ function bridge(root) {
     this.observe = (target, options) => registrations.push({ target, options, callback });
   }
 
-  new Function('document', 'MutationObserver', source)(
-    { documentElement: root },
-    MutationObserverStub
+  // The file does a second job now, fitting the container to what the page left
+  // it, and it asks the document and the window for the things it needs to do
+  // that. None of it is this test's subject, so it is stubbed to silence rather
+  // than exercised: fit-height.test.js drives that half.
+  new Function('document', 'MutationObserver', 'window', 'ResizeObserver', source)(
+    {
+      documentElement: root,
+      readyState: 'complete',
+      body: {},
+      getElementById: () => null,
+      addEventListener: () => {},
+    },
+    MutationObserverStub,
+    { scrollY: 0, addEventListener: () => {} },
+    function () {
+      this.observe = () => {};
+    }
   );
 
   expect(registrations).toHaveLength(1);

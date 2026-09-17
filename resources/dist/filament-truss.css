@@ -61,10 +61,18 @@ body {
         var(--bp-bg);
 
     /* A height of its own. Truss's viewport fills the window on a page it owns;
-       here it has to fit a panel that already spent space on chrome. */
+       here it has to fit a panel that already spent space on chrome.
+
+       `--ft-top` is how far down the page the container actually starts,
+       measured and published by filament-truss.js, because the answer is a
+       topbar and a heading this package does not own in a theme it may never
+       have seen. The 12rem is what this rule guessed before that, kept as the
+       fallback so a page where the script never runs is no worse off. The 2rem
+       is the padding Filament leaves under the page, matched so the box stops
+       where the page does. */
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 12rem);
+    height: calc(100vh - var(--ft-top, 12rem) - 2rem);
     min-height: 28rem;
     overflow: hidden;
 

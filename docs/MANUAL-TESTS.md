@@ -62,7 +62,10 @@ that depend on markup this package reproduces rather than owns.
 - [ ] The diagram is contained: the blueprint grid is inside the bordered box
       only, not behind the sidebar, the topbar or the whole admin.
 - [ ] The box has a sensible height on a laptop viewport, and the page does not
-      scroll horizontally.
+      scroll horizontally. **It should not scroll vertically either**: the box
+      ends where the page's own bottom padding begins. Its height is measured
+      rather than assumed, so check it again on a panel whose heading is a
+      different height (a breadcrumb, a wrapped subheading, a compact theme).
 - [ ] A tall diagram scrolls inside the viewport rather than stretching the box
       past the height it was given.
 - [ ] The footer shows a table count and a last-updated time.
