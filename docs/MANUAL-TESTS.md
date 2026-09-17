@@ -417,7 +417,18 @@ monospaced.
 `php artisan truss:baseline`, and no such command exists. Baselines are written
 by Truss when migrations finish. Corrected above.
 
-**Not covered and still needing a person**: the non-default and custom panel
-themes with the compact modifier, a changed panel primary, the two judgement
-calls in section 4 about the grey steps and row readability, and everything in
-section 6 beyond the no-baseline case.
+**Section 4 finished on 17/09/2026, including the judgements.** The panel primary
+was changed to teal and everything that should follow did; the layout options
+(top navigation, full content width, a collapsing sidebar) and a different
+typeface were each run; a custom compiled theme was built and registered, and a
+Slate grey scale set through `colors()` moved the diagram with it. **The two
+judgement calls were made by Alberto and both pass**: the grey steps read as
+separate rows without shouting, in light and in dark, and the 13px monospace is
+comfortable in both.
+
+**The cache flag passes** (the store made unwritable with sessions elsewhere: the
+whole schema still drew, and the warning banner appeared in Filament's warning
+colours).
+
+**What is left is one item, and it cannot be ticked here**: the SQLite fallback,
+for the reason given in section 6. Everything else in this file has been run.
