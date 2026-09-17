@@ -270,8 +270,20 @@ no-op rather than an error.
       - `->font('Poppins')`: the heading, the toolbar labels, the inputs and the
         footer follow the panel. **The canvas and the legend keys must not**,
         because they are notation.
-- [ ] A custom panel theme: same question, and the honest one, since this is what
-      most real panels run.
+- [ ] A custom panel theme (`php artisan make:filament-theme`, registered with
+      `->viteTheme()`, then `npm run build`): same question, and the honest one,
+      since this is what most real panels run. The compiled theme replaces
+      Filament's own stylesheet, so this checks that the diagram is reading
+      properties rather than a stylesheet it expected to be there.
+- [ ] **Change the panel's greys** (`->colors(['gray' => Color::Slate])`) and
+      reload: the diagram background, the entity fill, the hairlines, the grid
+      and the entity text all move with them.
+
+      **Overriding `--color-gray-*` in the theme's own CSS does not**, and that
+      is correct rather than a gap: Filament emits its `--gray-*` from
+      `colors()`, so a Tailwind-level override moves neither the panel's chrome
+      nor ours. Whatever changes Filament's palette changes the diagram, and
+      whatever does not, does not.
 - [ ] **Change the panel's primary colour** (`->colors(['primary' => Color::Teal])`)
       and reload. **What follows it**: the rule under the toolbar, the focused
       table's border, the input focus ring, the checkbox accent, the zoom
