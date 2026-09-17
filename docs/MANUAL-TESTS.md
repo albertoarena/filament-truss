@@ -180,6 +180,10 @@ no-op rather than an error.
       `--gray-900` in dark, over the page's own grey. Measured rather than
       judged, since `--gray-50` and white are one step apart and the eye forgives
       it while a screenshot beside a resource does not.
+- [ ] **The utility buttons read as one set.** Export, health and legend at the
+      same size and the same stroke, with no character standing in for an icon.
+      Narrow the window until the more-controls button appears and check it too,
+      since it is the one that is hidden at desk width.
 - [ ] Focus a control: a solid 2px ring in the panel's primary, no border, and
       the shade steps down in dark rather than glaring.
 - [ ] The two checkboxes are Filament's own, which is to say rounded with a ring

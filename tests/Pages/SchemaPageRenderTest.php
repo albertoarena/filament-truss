@@ -165,3 +165,69 @@ it('is included by the page that hosts it', function () {
 
     expect($view)->toContain('filament-truss::diagram');
 });
+
+/**
+ * The toolbar's glyphs, which are ours and not Truss's.
+ *
+ * The buttons themselves belong to Truss, which finds them by id and would
+ * break if one went missing, but what is drawn inside them is written here. The
+ * drift guard above checks ids, so swapping the contents cannot reach it.
+ */
+function utilButton(string $id): string
+{
+    preg_match(
+        '/<button[^>]*id="'.preg_quote($id, '/').'"[^>]*>(.*?)<\/button>/s',
+        renderDiagram(),
+        $matches
+    );
+
+    return $matches[1] ?? '';
+}
+
+it('draws the toolbar buttons with icons rather than with typography', function () {
+    // `⋯` and `▤` were characters, sized by font-size and drawn by whatever the
+    // platform had to hand. Beside a Filament icon button they read as text,
+    // because that is what they were.
+    foreach (['truss-more-btn', 'truss-legend-btn', 'truss-export-btn'] as $id) {
+        expect(utilButton($id))->toContain('<svg');
+    }
+
+    $html = renderDiagram();
+
+    expect($html)->not->toContain('⋯')
+        ->and($html)->not->toContain('▤');
+});
+
+it('takes those three from the icon set the panel already ships', function () {
+    // Heroicons, through Filament's own component, so a panel is drawing them
+    // from the same set as every other icon on the page. `data-slot="icon"` is
+    // what the shipped files carry, and a hand-drawn path would not.
+    foreach (['truss-more-btn', 'truss-legend-btn', 'truss-export-btn'] as $id) {
+        expect(utilButton($id))->toContain('data-slot="icon"');
+    }
+});
+
+it('draws the two it keeps at the same weight as the rest', function () {
+    // Diff and health stay, because no icon set has a glyph for "what changed
+    // since the last migration" and a refresh arrow would say something untrue,
+    // and because Truss's health icon is a heart with a pulse trace where
+    // Heroicons has a plain heart. What they cannot keep is Truss's stroke: 2 on
+    // a 24 grid beside Heroicons' 1.5 is what makes a mixed set look mixed.
+    $svgs = [];
+    preg_match_all('/<svg[^>]*>/', renderDiagram(), $svgs);
+
+    $toolbar = array_filter($svgs[0], fn (string $tag): bool => str_contains($tag, 'viewBox="0 0 24 24"'));
+
+    expect($toolbar)->not->toBeEmpty();
+
+    foreach ($toolbar as $tag) {
+        expect($tag)->toContain('stroke-width="1.5"');
+    }
+});
+
+it('keeps the class the health pulse hangs off', function () {
+    // Truss animates `.truss-health-icon` when the doctor reports a warning or
+    // an error, with a reduced-motion opt-out. Restyling the icon and dropping
+    // the class would stop the badge pulsing, and nothing would say so.
+    expect(utilButton('truss-health-btn'))->toContain('truss-health-icon');
+});

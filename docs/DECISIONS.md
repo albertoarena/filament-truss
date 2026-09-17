@@ -316,6 +316,32 @@ margin that assumes the padding of a Filament container that is not there.
 toolbar markup is reproduced in this package, so hanging our chrome on a class of
 our own means an upstream rename costs the Blade and not the stylesheet as well.
 
+## Borrow Heroicons for three toolbar glyphs, and keep two of Truss's
+
+**Context:** the toolbar's five utility buttons were Truss's, and two of them
+were not icons at all: `⋯` for more-controls and `▤` for the legend, sized by
+`font-size` and drawn by whatever the platform had. The other three were line
+icons on a 24 grid at `stroke-width: 2`, where Heroicons, which the panel is
+already full of, draws at 1.5.
+**Decision:** swap the three where the shipped set says the same thing (more
+controls to `ellipsis-horizontal`, legend to `list-bullet`, export to
+`arrow-down-tray`, which is Filament's own download idiom), through Filament's
+icon component so a panel that swapped the set gets its own. Keep diff and
+health, and redraw them at Heroicons' geometry.
+**Trade-off:** a mixed set, which is the point rather than a compromise. No icon
+set has a glyph for "what changed since the last migration", and the nearest
+Heroicons offers means refresh, which would be a lie on a button. Truss's health
+icon is a heart with a pulse trace where Heroicons has a plain heart, and the
+trace is the half that says vital signs rather than favourite. Matching the
+stroke and the box is what makes the two survivors read as members of the same
+family rather than as leftovers.
+
+**Two things this rests on.** The buttons are Truss's and are found by id, but
+their contents are ours, and the drift guard checks ids, so swapping what is
+inside cannot reach it. And `truss-health-icon` is load bearing: Truss's own
+stylesheet pulses that class on a warning or an error, with a reduced-motion
+opt-out, so it survives the restyle and has a test of its own saying why.
+
 ## The project link is on by default, and removable in one call
 
 **Context:** the page carries a subheading saying where the diagram comes from
