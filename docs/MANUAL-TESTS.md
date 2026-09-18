@@ -19,23 +19,45 @@ whatever cannot be automated (real engines, real themes, a real eye).
 
 ## Setting up
 
-A scratch Filament 5 panel pointed at a development database with a real schema.
-An ER diagram needs real tables, not real resources, so the panel does not need
-any. Worth having in the database: a table with a foreign key, a pivot with a
-composite primary key, a table with a column default, and at least 30 tables so
-the large-schema path is reachable.
+**The panel these passes are recorded against is
+[`albertoarena/filament-truss-demo`](https://github.com/albertoarena/filament-truss-demo)**,
+which is public and installs this package from Packagist like any other host. It
+is a seeded bookshop of 16 tables, 8 of them drawable, with a foreign key, a
+pivot with a composite unique key, a self-referencing key, a nullable key with
+`ON DELETE SET NULL`, a polymorphic pair, an enum and a column default. Its
+README says how to run it. Use it rather than building a panel, and the entries
+under **Passes recorded** stay comparable with each other.
+
+**Installed from Packagist, it renders the last release rather than what you are
+changing.** To point it at a working tree, replace the installed copy with a link
+to a sibling checkout:
 
 ```bash
-composer require albertoarena/filament-truss
+rm -rf vendor/albertoarena/filament-truss
+ln -s ../../../filament-truss vendor/albertoarena/filament-truss
 ```
 
-**The diff panel needs a schema with a history**, not a command. There is no
-`truss:baseline`: Truss records the pre-migration schema as the baseline
-whenever migrations finish, so a database built by a single migration has
-nothing to compare against and the panel stays hidden. Run one more migration,
-however small, and the panel reports what it did.
+Edit the plugin, reload the page, see the change. The next `composer install`
+puts the released package back, so nothing about it is permanent and nothing is
+committed. **The demo's dashboard card cannot tell you the link is in place**: it
+reads Composer's installed versions, which the link does not change, so it goes
+on naming the release. `ls -l vendor/albertoarena/filament-truss` is the check,
+and an edit that does not show up is the symptom.
 
-Register the plugin on the panel, then confirm the versions you tested with:
+Any other panel works, and two things are worth knowing before you build one. An
+ER diagram needs real tables and not real resources, so a panel with no resources
+is fine for everything but section 3b. And **the diff panel needs a schema with a
+history**, not a command: there is no `truss:baseline`, Truss records the
+pre-migration schema as the baseline whenever migrations finish, so a database
+built by a single migration has nothing to compare against and the panel stays
+hidden. Run one more migration, however small, and the panel reports what it did.
+The demo does this already, with a migration that adds `books.subtitle`.
+
+The large-schema banner is the one case 16 tables cannot reach. Lower
+`truss.large_schema.warn_above` for that check rather than seeding 30 tables to
+meet it, which is what the recorded passes did.
+
+Then confirm the versions you tested with:
 
 ```bash
 composer show albertoarena/laravel-truss filament/filament | grep -E "^(name|versions)"
