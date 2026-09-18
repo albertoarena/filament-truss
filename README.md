@@ -21,7 +21,7 @@ database you actually have rather than the migrations you think you ran.
 **Structure only. No row data is ever read, sent, or rendered.** That is the core
 promise of Truss and this package inherits it without exception.
 
-[![Read the docs](https://img.shields.io/badge/Read%20the%20docs-f59e0b?style=for-the-badge)](https://trussphp.com)
+[![Read the docs](https://img.shields.io/badge/Read%20the%20docs-f59e0b?style=for-the-badge)](https://trussphp.com/filament/?utm_source=github&utm_medium=readme&utm_campaign=filament-truss)
 
 ## What it is, and what it is not
 
@@ -169,7 +169,7 @@ $panel->plugin(FilamentTrussPlugin::make()->documentationLink(false));
 
 ## Documentation
 
-**The user guide lives at [trussphp.com](https://trussphp.com)**, in a section of
+**The user guide lives at [trussphp.com](https://trussphp.com/filament/?utm_source=github&utm_medium=readme&utm_campaign=filament-truss)**, in a section of
 its own alongside the Laravel Truss documentation. This README stays the source
 of truth for installing and configuring the package, because it is what Packagist
 and the plugin directory render, and the site carries the narrative, the

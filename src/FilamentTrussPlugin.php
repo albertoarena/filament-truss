@@ -22,8 +22,16 @@ use Filament\Panel;
  */
 class FilamentTrussPlugin implements Plugin
 {
-    /** Where the package lives, and where its documentation is kept. */
-    public const PROJECT_URL = 'https://github.com/albertoarena/filament-truss';
+    /**
+     * Where the documentation lives, which is where the page header points.
+     *
+     * **Tagged deliberately.** This link renders inside other people's admin
+     * panels, so it is the only signal that says whether the plugin sends
+     * anybody to the site: untagged, those arrivals cannot be told from any
+     * other referral. `filament-panel` as the source is what makes them
+     * countable.
+     */
+    public const PROJECT_URL = 'https://trussphp.com/filament/?utm_source=filament-panel&utm_medium=referral&utm_campaign=filament-truss';
 
     protected bool $hasDocumentationLink = true;
 
