@@ -25,6 +25,8 @@ Truss v1.12.0 added `Truss::payload(?string $connection = null)`, which returns
 the array the Truss dashboard runs on, in process, with no HTTP request:
 
 - the snapshot, with config exclusions already applied
+- `excluded.count`, how many tables those exclusions removed, always present and
+  never the names (v1.13.0)
 - the structural diff against the recorded baseline
 - the `truss:doctor` findings
 - flags saying the cache store or the baseline disk could not be read
@@ -57,6 +59,30 @@ natively, keep the canvas" cuts across the code rather than along it.
 **v0.1 re-drives that pipeline rather than reimplementing it.** Reimplementing
 selection and definition in PHP would mean a second renderer to keep in step with
 the first, for ever.
+
+## What the exclusion list hides, and who may reveal it
+
+Truss removes framework plumbing from the diagram by config, so a panel sitting
+on 16 tables draws 8 of them. Until v1.13.0 nothing on the page said so, which
+reads as Truss failing to see the other eight rather than as a setting doing its
+job.
+
+**The whole mechanism is Truss's and this package supplies only the markup.** The
+footer says `8 of 16 tables` because `excluded.count` is in the payload; the
+**Show hidden tables** toggle draws the hidden ones muted, and they reach the
+browser at all only where `truss.reveal_excluded` allows it (on in `local`, off
+elsewhere, matching `truss.enabled` and the `viewTruss` gate). There is no query
+parameter, so revealing stays the operator's decision and never the viewer's.
+
+**This package adds no control of its own**, deliberately. See `DECISIONS.md`.
+What it owes the feature is the two elements the toggle needs in the reproduced
+container, which is the same standing cost the rest of that container carries and
+is caught by the same drift guard.
+
+Revealed tables carry no change marks and no findings, because the diff and the
+doctor have already run on the filtered set. That is why Truss draws them muted,
+and it is worth knowing here: a revealed table showing nothing wrong has not been
+checked, rather than checked and found clean.
 
 ## The open problem, and it is the one to solve first
 
@@ -117,9 +143,30 @@ first-party themes plus a compact modifier, and panels carry custom themes
 besides, so matching a palette by hand is a moving target that is wrong by the
 next release.
 
-**Read the panel's own CSS custom properties and map them into Mermaid's theme
-variables at render time.** Every theme then works, including ones that do not
-exist yet, and dark mode follows the panel instead of being detected separately.
+**Read the panel's own CSS custom properties and map them into Truss's theme
+variables.** Every theme then works, including ones that do not exist yet, and
+dark mode follows the panel instead of being detected separately.
+
+**Built, and it turned out to be pure CSS.** Filament emits its scales
+(`--primary-50` through `--primary-950`, the same for `--gray-*`) as custom
+properties in the page, generated from the panel's own colour configuration.
+Truss repaints the Mermaid output from its own variables, with `!important` rules
+that beat the fills Mermaid writes as attributes. So redefining Truss's variables
+on the container re-skins chrome and diagram together, in both modes, with no
+JavaScript and no re-render. A panel with a custom primary colour arrives themed
+for free.
+
+**The cost is the same one the markup carries.** Truss's public contract is eight
+semantic knobs (`accent`, `surface`, `muted` and so on) and it says the `--bp-*`
+tokens behind them are private. Those knobs are config, read on the server, and a
+panel picks its theme in the browser, so they cannot answer this question and the
+private tokens are driven instead. `tests/Theme/PaletteTokensTest.php` reads the
+knob map out of Truss by reflection and fails when our mapping stops covering it,
+which is what keeps a rename from quietly leaving the diagram half-painted.
+
+**A theme configured in `truss.theme` is not applied here**, deliberately. It
+themes the standalone dashboard, which is a page of its own; inside a panel the
+panel is the authority, which is the whole point of this section.
 
 **Dark mode was predicted to be the first thing that broke, and the prediction
 was wrong in a useful way.** An earlier version of this section said the diagram
@@ -152,18 +199,43 @@ Two things fall out, and the second is the more interesting:
   see.
 
 **Nobody can copy this without a panel.** It is the difference between the same
-diagram in a frame and a plugin. **Not in v0.1**: the first release is the
-diagram, the focus picker and the panel's own styling, because those have to be
-right before anything else is worth adding.
+diagram in a frame and a plugin.
+
+**The half that costs nothing is in v0.1.** Truss reads `focus` from the query
+string and applies it on load, so a button that opens
+`database-schema?focus=books` is a link rather than a feature: no JavaScript of
+ours, no addition to the payload, nothing new to keep in step with the renderer.
+That is `ViewInSchemaAction`, and `HasViewInSchemaAction` opts a resource in with
+one line by asking it for `getModel()` and taking the table from there.
+
+Three questions decide whether the button appears, and each is a bug report if
+dropped:
+
+- **Is the page on this panel?** A resource can be registered on two panels where
+  only one of them has the plugin, and building the URL there would throw.
+- **May this viewer see it?** The page's own rule, which is Truss's rule. Being
+  allowed to list Books is not being allowed to read the database structure.
+- **Will the diagram draw the table?** Truss ignores `?focus=` for an excluded
+  table, silently and correctly, so a button pointing at one lands on an
+  unfocused diagram and reads as broken.
+
+The last is answered from Truss's exclusion config rather than from a payload:
+the question is asked once per button and `Truss::payload()` reads the whole
+schema to answer it. Any no removes the button rather than disabling it, because
+there is nothing the viewer could do about any of the three.
+
+**The half that needs the panel's own knowledge waits for v0.2**: reading every
+registered resource to report which tables no resource manages. That is a
+finding rather than a link, and it needs a panel that genuinely has resources.
 
 ## Scope by version
 
-**v0.1**: the diagram, the focus picker, and the panel's theme. Dogfoodable
-against a scratch Filament 5 panel pointed at a real schema, because an ER
-diagram needs a real schema and not real resources.
+**v0.1**: the diagram, the focus picker, the panel's theme, and the focus deep
+link from a resource. Dogfoodable against a scratch Filament 5 panel pointed at a
+real schema, because an ER diagram needs a real schema and not real resources.
 
-**v0.2**: resource linking, including the unmapped-table finding. This one needs
-a panel that genuinely has resources.
+**v0.2**: the rest of resource linking, including the unmapped-table finding.
+This one needs a panel that genuinely has resources.
 
 **Later, undecided**: the structural findings as a page of their own. Truss
 already produces them and `Truss::payload()` already carries them, so the cost is

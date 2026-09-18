@@ -9,13 +9,40 @@ const css = readFileSync(
 
 const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
 
-/** The declarations of the first rule whose selector contains the needle. */
-function rule(needle) {
+/**
+ * The declarations of the rule with exactly this selector.
+ *
+ * Exact rather than a substring match, because the palette rules below are
+ * scoped to the same element as the layout rules and a loose match would happily
+ * assert against the wrong block.
+ */
+function rule(selector) {
   const match = [...withoutComments.matchAll(/([^{}]+)\{([^}]*)\}/g)].find(
-    ([, selector]) => selector.includes(needle)
+    ([, found]) => found.trim().replace(/\s+/g, ' ') === selector
   );
 
   return match ? match[2] : '';
+}
+
+/**
+ * The declarations of every rule whose selector mentions this fragment, joined.
+ *
+ * The exact match above is right for a block asserted as a whole. The toolbar
+ * chrome is deliberately several rules (light, dark, focus, and one per control
+ * type), so these read the group rather than one member of it.
+ */
+function rulesFor(fragment) {
+  return [...withoutComments.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+    .filter(([, selector]) => selector.includes(fragment))
+    .map(([, , declarations]) => declarations)
+    .join('\n');
+}
+
+/** Every rule in the sheet as a [selector, declarations] pair. */
+function rules() {
+  return [...withoutComments.matchAll(/([^{}]+)\{([^}]*)\}/g)].map(
+    ([, selector, declarations]) => [selector.trim(), declarations]
+  );
 }
 
 /** Every selector in the sheet, one entry per rule. */
@@ -29,7 +56,24 @@ describe('the containment stylesheet', () => {
   it('hands the page background back to the panel', () => {
     // Truss styles `body` because it renders a page it owns. Inside a panel that
     // paints the blueprint grid across the whole admin, sidebar included.
-    expect(rule('body')).toMatch(/background\s*:\s*none/);
+    //
+    // **Repainting it is not optional, and cancelling it is not enough.**
+    // Filament's own `.fi-body` background lives inside a Tailwind layer, and an
+    // unlayered rule beats a layered one whatever its specificity, so Truss's
+    // plain `body` rule was already winning before this sheet existed. Anything
+    // here that merely removes it leaves the page with no background at all:
+    // invisible in light, where the canvas is white anyway, and a white slab
+    // around the diagram in dark.
+    expect(rule('body')).toMatch(/background\s*:\s*var\(--gray-50\)/);
+    expect(rule(':root.dark body')).toMatch(/background\s*:\s*var\(--gray-950\)/);
+  });
+
+  it('follows the panel class for that, not the mirrored attribute', () => {
+    // The palette below keys off `data-theme`, which is Truss's state and is set
+    // by the bridge script. The page background is Filament's own business, so it
+    // keys off Filament's own class: correct on first paint, with no dependency
+    // on our JavaScript having run.
+    expect(selectors()).toContain(':root.dark body');
   });
 
   it('repaints the grid where the grid belongs', () => {
@@ -58,16 +102,37 @@ describe('the containment stylesheet', () => {
     // `min-height: 0` is the load-bearing half. A flex child defaults to
     // min-height auto, so a tall diagram pushes the container past the height
     // set above instead of scrolling inside it.
-    const viewport = rule('#truss-viewport');
+    const viewport = rule('#truss-app.truss-embed #truss-viewport');
 
     expect(viewport).toMatch(/flex\s*:\s*1 1 auto/);
     expect(viewport).toMatch(/min-height\s*:\s*0/);
   });
 
+  it('hands the panel its typeface back, for the same reason as the background', () => {
+    // The same trap as the background, and only half of it was seen the first
+    // time. `truss.css` styles `body` for a page it owns, and that includes the
+    // font. The rule is unlayered, Filament's is inside a Tailwind layer, and an
+    // unlayered rule wins however weak its selector.
+    //
+    // So the whole page rendered in `system-ui` on this page alone: heading,
+    // subheading, sidebar, topbar, and Filament's own search input. Measured
+    // rather than noticed, because system-ui and Inter are close enough to
+    // survive a glance.
+    expect(rule('body')).toMatch(/font-family:\s*var\(--default-font-family\)/);
+  });
+
   it('hides the theme button, because the panel owns the theme', () => {
     // Hidden rather than removed from the markup: Truss reaches for this element
     // without checking whether it is there.
-    expect(rule('#truss-theme-btn')).toMatch(/display\s*:\s*none/);
+    expect(rule('#truss-app.truss-embed #truss-theme-btn')).toMatch(/display\s*:\s*none/);
+  });
+
+  it('leaves the palette to the rules below', () => {
+    // Layout and colour are separate jobs in this sheet. The layout rules exist
+    // so the diagram fits a panel; the palette rules exist so it looks like one.
+    const embed = rule('#truss-app.truss-embed');
+
+    expect(embed).not.toContain('--bp-entity-bg');
   });
 
   it('changes nothing on a panel page that has no diagram', () => {
@@ -75,9 +140,329 @@ describe('the containment stylesheet', () => {
     // may own elements of its own. Everything except the `body` reset stays
     // scoped to the container, so nothing here can reach a page without one.
     const unscoped = selectors().filter(
-      (selector) => selector !== 'body' && ! selector.includes('.truss-embed')
+      (selector) => ! /(^|\s)body$/.test(selector) && ! selector.includes('.truss-embed')
     );
 
     expect(unscoped).toEqual([]);
+  });
+});
+
+describe('the panel palette', () => {
+  // Truss repaints the Mermaid output from these variables with `!important`
+  // rules of its own, which is why a diagram follows a theme change with no
+  // re-render. Redefining them on the container is therefore the whole
+  // mechanism: no JavaScript, no second renderer, no palette to keep in step.
+  const light = rule('.truss-embed');
+  const dark = rule(':root[data-theme="dark"] .truss-embed');
+
+  it('takes its colours from the panel instead of matching them', () => {
+    // Filament emits its own palette as custom properties, generated from the
+    // panel's colour configuration, so a custom panel colour arrives here for
+    // free and a theme that does not exist yet still works.
+    expect(light).toContain('var(--primary-');
+    expect(light).toContain('var(--gray-');
+  });
+
+  it('gives the accent to the panel primary rather than to a grey', () => {
+    // The accent is what a person reads as "this is a Filament page": headings,
+    // primary key badges, the focus ring.
+    expect(light).toMatch(/--bp-ink:\s*var\(--primary-/);
+    expect(dark).toMatch(/--bp-ink:\s*var\(--primary-/);
+  });
+
+  it('answers for dark as well as light', () => {
+    // The bridge sets data-theme from Filament's class, so this is the block
+    // that actually runs when the panel is dark.
+    expect(dark).toContain('var(--gray-');
+  });
+
+  it('names no colour of its own', () => {
+    // A hex literal here would be a palette this package invented, which is the
+    // thing that is wrong by the next Filament release.
+    expect(light).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+    expect(dark).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+  });
+});
+
+describe('the severity families, which Truss hard-codes', () => {
+  // Truss ships info, warning and error as fixed hexes rather than as theme
+  // knobs, so the palette above left them alone and the page wore them: a pale
+  // blue banner reading `#e5eefb` on `#12356b` inside an amber panel, and a
+  // health badge in `#a11`. Found by the driven pass on 17/09/2026, with the
+  // large-schema banner the loudest of the three.
+  //
+  // Filament emits `--info-*`, `--warning-*` and `--danger-*` as full 50 to 950
+  // scales, so there is a step to map each one to. Outside Truss's knob map,
+  // like the grid tokens, which is why the Pest reflection test cannot police
+  // these and this one does.
+  const light = rule('.truss-embed');
+  const dark = rule(':root[data-theme="dark"] .truss-embed');
+
+  const families = [
+    ['--bp-info', 'info'],
+    ['--bp-warn', 'warning'],
+    ['--bp-error', 'danger'],
+  ];
+
+  it('takes all three from the panel rather than from blueprint hexes', () => {
+    for (const [token, family] of families) {
+      expect(light).toMatch(new RegExp(`${token}-bg:\\s*var\\(--${family}-100\\)`));
+      expect(light).toMatch(new RegExp(`${token}-fg:\\s*var\\(--${family}-700\\)`));
+    }
+  });
+
+  it('steps them the other way for dark, as the rest of the palette does', () => {
+    for (const [token, family] of families) {
+      expect(dark).toMatch(new RegExp(`${token}-bg:\\s*var\\(--${family}-950\\)`));
+      expect(dark).toMatch(new RegExp(`${token}-fg:\\s*var\\(--${family}-400\\)`));
+    }
+  });
+
+  it('writes no colour of its own anywhere in the palette', () => {
+    // The whole sheet reads Filament's properties. A hex here would be a value
+    // this package invented, which is the thing the palette exists to avoid.
+    expect(light).not.toMatch(/#[0-9a-f]{3}/i);
+    expect(dark).not.toMatch(/#[0-9a-f]{3}/i);
+  });
+});
+
+describe('the toolbar, wearing the panel\'s own controls', () => {
+  // Truss styles its toolbar for a dashboard it owns: monospace, a 2px radius
+  // and a hairline border. Filament's inputs are its own typeface, rounded to
+  // `--radius-lg`, and carry a ring and a shadow instead of a border. The
+  // palette above already gives these their colours, so this is what is left,
+  // and next to a real Filament search field it is the last thing that still
+  // reads as a visitor in the panel.
+  //
+  // The rules hang off `ft-controls`, a class this package adds in its own
+  // Blade, rather than off Truss's `.truss-toolbar`. The markup is ours to
+  // write, so an upstream rename should cost us the Blade and not this sheet
+  // as well.
+  const chrome = rulesFor('.ft-controls');
+
+  it('wears the panel typeface rather than the diagram monospace', () => {
+    expect(chrome).toContain('var(--default-font-family)');
+  });
+
+  it('rounds to the panel radius rather than Truss\'s 2px', () => {
+    // A custom property, not 0.5rem written out, so a panel that changes its
+    // radius takes the toolbar with it.
+    expect(chrome).toMatch(/border-radius:\s*var\(--radius-lg\)/);
+  });
+
+  it('trades the hairline border for Filament\'s ring and shadow', () => {
+    // Filament draws no border at all: the outline is a 1px ring of the darkest
+    // grey at 10 percent, over a soft shadow. Measured from a rendered input in
+    // a panel rather than guessed at.
+    expect(chrome).toMatch(/border:\s*0/);
+    expect(chrome).toMatch(/box-shadow:[^;]*var\(--gray-950\)/);
+  });
+
+  it('rings in the panel primary on focus, in both modes', () => {
+    // Truss rings in `--bp-ink` at 22 percent and keeps a border. Filament
+    // replaces the grey ring with a solid 2px primary one, and steps the shade
+    // down in dark so it does not glare.
+    expect(rulesFor('.ft-controls input:focus')).toContain('var(--primary-600)');
+    expect(rulesFor(':root.dark #truss-app.truss-embed .ft-controls input:focus')).toContain(
+      'var(--primary-500)'
+    );
+  });
+
+  it('gives the checkboxes the panel accent', () => {
+    // The two toggles are native checkboxes, and a native checkbox painted by
+    // the operating system is the loudest wrong colour on the page.
+    expect(chrome).toMatch(/accent-color:\s*var\(--primary-/);
+  });
+
+  it('answers for dark with Filament\'s own class, not the bridged attribute', () => {
+    // The palette uses `data-theme`, because it is Truss's own switch. This is
+    // Filament's chrome, so it follows Filament's class and is right on the
+    // first paint, before the bridge script has run.
+    expect(rulesFor(':root.dark #truss-app.truss-embed .ft-controls')).not.toBe('');
+  });
+
+  it('never reaches into the canvas, where the schema is drawn', () => {
+    // The line this package draws. Truss's dashboard is monospaced throughout,
+    // which is right for a page whose subject is a schema. Inside a panel the
+    // line falls differently: identifiers stay monospaced, because columns of
+    // them line up and people copy them, and the words the interface says in
+    // its own voice belong in the panel's typeface.
+    //
+    // Everything inside the canvas is on the identifier side of that line, and
+    // no rule here may reach it.
+    const typography = rules().filter(([, declarations]) => declarations.includes('font-family'));
+
+    expect(typography).not.toEqual([]);
+    expect(typography.some(([selector]) => selector.includes('truss-canvas'))).toBe(false);
+  });
+
+  it('leaves the schema text that sits in the chrome monospaced too', () => {
+    // Two pieces of schema live outside the canvas and must survive the sweep:
+    // the legend's PK and FK keys, which are the diagram's own notation, and
+    // the focus picker's list, which is table names.
+    const named = selectors().join(' ');
+
+    expect(named).not.toContain('truss-legend-list dt');
+    expect(named).not.toContain('truss-combo-list');
+  });
+
+  it('sets the interface text in the panel typeface', () => {
+    // The footer, the legend and panel headings, the export menu and the zoom
+    // readout: words this page says, not names it reports.
+    expect(rulesFor('.truss-footer')).toContain('var(--default-font-family)');
+  });
+
+  it('includes the banners, which are sentences and not schema', () => {
+    // Missed by the first sweep because no banner was on screen to notice:
+    // "8 tables, a large schema. Use the filter or focus a table" was rendering
+    // in IBM Plex Mono at 11.5px, which is the notation face at a notation size
+    // for a sentence of plain English.
+    expect(rulesFor('.truss-banner')).toContain('var(--default-font-family)');
+  });
+});
+
+describe('the utility buttons, which are toggles and not fields', () => {
+  // Filament draws the line here and this package was on the wrong side of it.
+  // In a table header the search box carries a box because it is a field, and
+  // the filter and column buttons carry none because they are icon toggles.
+  // Export, health and legend are toggles, and they had the field treatment.
+  //
+  // Read out of the panel's compiled stylesheet on 17/09/2026:
+  // `.fi-icon-btn` is 36 by 36 at `--radius-lg`, `--gray-500`, no background,
+  // no ring, no shadow and no border, darkening to `--gray-600` on hover, with
+  // a 2px primary ring on focus-visible.
+  //
+  // The one thing deliberately not copied is its `margin: -8px`, which assumes
+  // the padding of a Filament container. The toolbar has padding of its own.
+  const util = rule('#truss-app.truss-embed .ft-controls .truss-util');
+
+  it('carries no box at all, the way Filament leaves an icon button', () => {
+    // `transparent` rather than nothing, because Truss fills these from
+    // `--bp-field` and a rule that says nothing leaves that fill in place.
+    expect(util).toMatch(/background:\s*transparent/);
+    expect(util).toMatch(/box-shadow:\s*none/);
+    expect(util).toMatch(/border:\s*0/);
+  });
+
+  it('is square at Filament\'s own icon button size', () => {
+    expect(util).toMatch(/width:\s*2\.25rem/);
+    expect(util).toMatch(/height:\s*2\.25rem/);
+  });
+
+  it('darkens on hover rather than turning the panel primary', () => {
+    // Filament shifts `--gray-500` to `--gray-600` and never fills. Colouring
+    // the icon primary was readable while the button had a box to sit in.
+    expect(rule('#truss-app.truss-embed .ft-controls .truss-util:hover')).toMatch(
+      /color:\s*var\(--gray-600\)/
+    );
+    expect(
+      rule(':root.dark #truss-app.truss-embed .ft-controls .truss-util:hover')
+    ).toMatch(/color:\s*var\(--gray-400\)/);
+  });
+
+  it('keeps a focus ring, which is now the only chrome it has', () => {
+    // With the box gone this is what a keyboard user has left, so it matters
+    // more here than on the inputs.
+    expect(
+      rule('#truss-app.truss-embed .ft-controls .truss-util:focus-visible')
+    ).toMatch(/var\(--primary-600\)/);
+    expect(
+      rule(':root.dark #truss-app.truss-embed .ft-controls .truss-util:focus-visible')
+    ).toMatch(/var\(--primary-500\)/);
+  });
+
+  it('lets the health button keep its severity, now that severity is Filament\'s', () => {
+    // Truss colours this button by what the doctor found, and our base rule
+    // out-specified it, so the icon sat grey beside a red count. It was not
+    // worth restoring while the severity colours were blueprint hexes; with the
+    // palette mapped it is the panel's own danger and warning.
+    expect(
+      rule('#truss-app.truss-embed .ft-controls .truss-util[data-severity="error"]')
+    ).toMatch(/color:\s*var\(--bp-error-fg\)/);
+    expect(
+      rule('#truss-app.truss-embed .ft-controls .truss-util[data-severity="warning"]')
+    ).toMatch(/color:\s*var\(--bp-warn-fg\)/);
+  });
+
+  it('still says which panel is open', () => {
+    // Kept from Truss rather than dropped with the rest. Filament's dropdowns
+    // hang off their trigger, so they need no open state; the legend and the
+    // health panel overlay the canvas, so which one is open is worth saying.
+    // With everything else gone, this is the only chrome these buttons ever
+    // carry: nothing until open, then filled.
+    expect(
+      rule('#truss-app.truss-embed .ft-controls .truss-util[aria-expanded="true"]')
+    ).toMatch(/background:\s*var\(--primary-600\)/);
+  });
+});
+
+describe('the toolbar, given room to stand in', () => {
+  // The bar itself, not the controls in it, so the assertions below cannot pass
+  // on the padding of an input.
+  const controls = rule('#truss-app.truss-embed .ft-controls');
+
+  it('refuses to be squeezed by the diagram below it', () => {
+    // The container is a column flexbox, so the toolbar is a flex child and
+    // shrinks: Truss asks for 54px and it was rendering at 43. That is what
+    // made it look cramped once the controls grew to Filament's 36px, and it
+    // is also what clipped the health badge, which rides 4px above its button
+    // and so ended up over the container's own `overflow: hidden` edge.
+    expect(controls).toMatch(/flex:\s*none/);
+  });
+
+  it('pads above and below, now the controls are Filament sized', () => {
+    expect(controls).toMatch(/padding:[^;]*rem/);
+  });
+
+  it('sits on white, like the header of a Filament table', () => {
+    // Measured side by side on 17/09/2026: a resource's table header is
+    // `#fff` over the page's `--gray-50`, and the toolbar was taking
+    // `--bp-panel`, which is `--gray-50` again. Same colour as the page it
+    // sits on, one step off the card every other header in the panel is.
+    //
+    // Set here rather than by moving `--bp-panel`, which also paints the
+    // legend, the menus and the footer. This is the one bar being compared
+    // with a Filament header.
+    expect(controls).toMatch(/background:\s*var\(--color-white\)/);
+  });
+
+  it('follows the panel into dark, where the card is not white', () => {
+    // Filament's card is `--gray-900` in dark, which is what `--bp-panel`
+    // already resolved to. Restated because the rule above would otherwise
+    // paint a white bar into a dark panel.
+    expect(rule(':root.dark #truss-app.truss-embed .ft-controls')).toMatch(
+      /background:\s*var\(--gray-900\)/
+    );
+  });
+});
+
+describe('the panel palette, on the states Truss paints blue', () => {
+  const light = rule('.truss-embed');
+  const dark = rule(':root[data-theme="dark"] .truss-embed');
+
+  it('fills a focused table like a Filament card, not in cyan', () => {
+    // `--bp-focus-bg` is Truss's pale cyan and it fills the focused table's
+    // name band, which read as a different design system sitting inside the
+    // panel. White over the panel's grey is what a Filament card does, and the
+    // primary border already carries the focus signal on its own.
+    expect(light).toMatch(/--bp-focus-bg:\s*var\(--color-white\)/);
+    expect(dark).toMatch(/--bp-focus-bg:\s*var\(--gray-/);
+  });
+
+  it('hovers a menu item in the panel grey rather than Truss\'s blue', () => {
+    // Truss paints the export menu's hover and the focus combobox's active
+    // option from `--bp-info-bg`, which is a pale blue. Overridden here rather
+    // than by remapping the token, because that token also carries the meaning
+    // "info" in the banners and the health panel, and a hover state is not a
+    // severity.
+    //
+    // `--gray-100` and not Filament's own `--gray-50`: Filament hovers over a
+    // white dropdown, and Truss's menu panel is already `--gray-50`, so that
+    // value would be a hover with nothing to show. Found by hovering one.
+    expect(rulesFor('.truss-menu button')).toMatch(/background:\s*var\(--gray-100\)/);
+
+    // The dim on an export this page cannot perform is weaker than these
+    // selectors, so a disabled item would otherwise light up on hover.
+    expect(selectors().filter((s) => s.includes('.truss-menu')).join()).toContain('aria-disabled');
   });
 });

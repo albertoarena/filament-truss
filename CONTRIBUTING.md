@@ -3,7 +3,7 @@
 Thanks for considering a contribution.
 
 **Nothing is released yet.** The package builds and its suites run, but there is
-no `v0.1.0` tag, so anything here can still change. Until there is one, the most
+no `v1.0.0` tag, so anything here can still change. Until there is one, the most
 useful contribution is a question or an issue rather than a pull request.
 
 ## Workflow

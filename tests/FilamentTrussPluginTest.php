@@ -23,3 +23,20 @@ it('can be made through the static helper, as a panel expects', function () {
     // of the shape rather than sugar.
     expect(FilamentTrussPlugin::make())->toBeInstanceOf(FilamentTrussPlugin::class);
 });
+
+it('points the documentation link at the guide, tagged so arrivals can be counted', function () {
+    // The gap this closes, named by the 18/09 review: the header test asserts
+    // the action uses this constant, not that the constant is right, so it
+    // passed for the GitHub URL that shipped in front of it for weeks. This is
+    // the one launch item CI could not catch, and now it can.
+    //
+    // **The tag is the point, not decoration.** This link renders inside other
+    // people's admin panels, so it is the only signal that says whether the
+    // plugin sends anybody to the site. Untagged, those arrivals cannot be told
+    // from any other referral.
+    expect(FilamentTrussPlugin::PROJECT_URL)
+        ->toStartWith('https://trussphp.com/filament/')
+        ->toContain('utm_source=filament-panel')
+        ->toContain('utm_medium=referral')
+        ->toContain('utm_campaign=filament-truss');
+});

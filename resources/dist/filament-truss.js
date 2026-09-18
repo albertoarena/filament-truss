@@ -46,4 +46,62 @@
         attributes: true,
         attributeFilter: ['class', 'data-theme'],
     });
+
+    /*
+     * The second job: tell the stylesheet how much page is above the diagram.
+     *
+     * The container asks for the viewport height minus whatever the panel spent
+     * on chrome above it, and that number cannot be written in CSS. It is a
+     * topbar this package does not own, plus a heading whose height depends on
+     * a subheading that wraps, in a theme that may not exist yet. It was a
+     * literal `12rem` until a subheading was added and the box began hanging
+     * below the fold by exactly the height of the line that had been added.
+     *
+     * So the number is measured and published as `--ft-top`, and the stylesheet
+     * does the arithmetic. The `12rem` survives as the fallback in that
+     * `calc()`, so a page where this never runs is no worse off than before.
+     *
+     * Unit tested in tests/js/fit-height.test.js.
+     */
+    function fit() {
+        const app = document.getElementById('truss-app');
+
+        if (!app) {
+            return;
+        }
+
+        // From the document rather than from the viewport: a page restored
+        // mid-scroll reports a negative `top`, and the container would be given
+        // a height larger than the screen.
+        const value = Math.round(app.getBoundingClientRect().top + window.scrollY) + 'px';
+
+        // Only when it differs, for the same reason the theme sync above checks
+        // first: this writes a property that changes the element's height, and
+        // the observer below is watching the document for changes of that kind.
+        if (app.style.getPropertyValue('--ft-top') !== value) {
+            app.style.setProperty('--ft-top', value);
+        }
+    }
+
+    function watch() {
+        fit();
+
+        window.addEventListener('resize', fit);
+
+        // A window resize is not the only thing that moves the container. A
+        // subheading wrapping to a second line, a sidebar collapsing, a font
+        // arriving late: none of them fire a window event, and all of them
+        // change where the diagram starts.
+        if (typeof ResizeObserver === 'function' && document.body) {
+            new ResizeObserver(fit).observe(document.body);
+        }
+    }
+
+    // This file runs where it sits, above the container, so on first parse
+    // there is nothing to measure yet.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', watch, { once: true });
+    } else {
+        watch();
+    }
 })();

@@ -17,11 +17,16 @@
 
     The one deliberate difference from upstream: there is no
     `data-schema-endpoint`, because the payload is embedded below and no
-    request is ever made.
+    request is ever made. The export endpoint is a different matter and is kept:
+    Markdown, DBML, JSON and CSV are generated in the application, not in the
+    browser, and Truss greys them out when the attribute is absent.
 
     Structure only. The payload carries tables, columns, indexes and foreign
     keys, and never row data.
 --}}
+
+@use('AlbertoArena\FilamentTruss\Http\Asset')
+@use('Filament\Support\Icons\Heroicon')
 
 <link rel="preload" as="font" type="font/woff2"
       href="{{ route('truss.asset', 'ibm-plex-mono-400.woff2') }}" crossorigin>
@@ -31,13 +36,14 @@
 {{-- After truss.css, which is the whole mechanism: Truss styles `body` for a
      page it owns, and this takes that back and contains the diagram in the
      panel instead. --}}
-<link rel="stylesheet" href="{{ route('filament-truss.asset', 'filament-truss.css') }}">
+<link rel="stylesheet" href="{{ Asset::url('filament-truss.css') }}">
 
 <script src="{{ config('truss.diagram.mermaid_url') ?: route('truss.asset', 'mermaid.min.js') }}"></script>
 
 <div
     id="truss-app"
     class="truss-embed"
+    data-export-endpoint="{{ route('truss.export', ['format' => '__format__']) }}"
     data-connections='@json($connections)'
     data-type-labels="{{ $typeLabels }}"
     data-warn-above="{{ $warnAbove }}"
@@ -50,7 +56,10 @@
          comments as structure, so this is not hypothetical. --}}
     <script type="application/json" data-truss-payload>@json($payload, JSON_HEX_TAG)</script>
 
-    <div class="truss-toolbar">
+    {{-- `ft-controls` is ours, not Truss's, and it is what the stylesheet hangs
+         the Filament control chrome on. Keeping it separate from
+         `truss-toolbar` means an upstream rename costs this file alone. --}}
+    <div class="truss-toolbar ft-controls">
         <label class="truss-field truss-field--search">
             <span class="truss-field-label">Filter</span>
             <input id="truss-search" type="search" placeholder="table name…" autocomplete="off">
@@ -70,8 +79,23 @@
                 <span class="truss-field-label">Depth</span>
                 <input id="truss-depth" type="number" min="0" step="1">
             </label>
+            {{-- `fi-checkbox-input` is Filament's own class, and this is the one
+                 place this page borrows one. A native checkbox is painted by the
+                 operating system and `accent-color` reaches only its checked
+                 fill, so the stylesheet cannot fake it the way it fakes the text
+                 inputs. Filament styles this selector outright, needing no
+                 wrapper and no markup of its own around it. --}}
             <label class="truss-field truss-field--check">
-                <input id="truss-labels" type="checkbox"> <span class="truss-field-label">Laravel types</span>
+                <input id="truss-labels" type="checkbox" class="fi-checkbox-input"> <span class="truss-field-label">Laravel types</span>
+            </label>
+            {{-- Truss's own control, reproduced and not reimplemented. It stays
+                 hidden until the payload actually carries tables to reveal,
+                 which it does only where `truss.reveal_excluded` allows them off
+                 the server. Hiding and revealing is the operator's decision in
+                 Truss config, and this package deliberately adds no switch of
+                 its own beside it. --}}
+            <label class="truss-field truss-field--check" id="truss-show-excluded-field" hidden>
+                <input id="truss-show-excluded" type="checkbox" class="fi-checkbox-input"> <span class="truss-field-label">Show hidden tables</span>
             </label>
         </div>
 
@@ -80,25 +104,35 @@
                 <span class="truss-field-label">Connections</span>
                 <select id="truss-connection"></select>
             </label>
-            <button type="button" class="truss-util truss-util--more" id="truss-more-btn" title="More controls" aria-expanded="false">⋯</button>
+            <button type="button" class="truss-util truss-util--more" id="truss-more-btn" title="More controls" aria-expanded="false">
+                <x-filament::icon :icon="Heroicon::OutlinedEllipsisHorizontal" />
+            </button>
             <button type="button" class="truss-util" id="truss-export-btn" title="Export the diagram (PNG or SVG)" aria-expanded="false">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 3 v11"/><path d="M7 9 l5 5 5-5"/><path d="M4 20 h16"/>
-                </svg>
+                <x-filament::icon :icon="Heroicon::OutlinedArrowDownTray" />
             </button>
             <button type="button" class="truss-util" id="truss-diff-btn" title="What changed since the last migration" aria-expanded="false" hidden>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                {{-- Kept rather than swapped: no icon set has a glyph for "what
+                     changed since the last migration", and the nearest
+                     Heroicons offers means refresh. Redrawn at the set's own
+                     geometry so it sits in the same family. --}}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M5 8 h8 M9 4 v8"/><path d="M11 17 h8"/>
                 </svg>
             </button>
             <button type="button" class="truss-util" id="truss-health-btn" title="Structure health (truss:doctor findings)" aria-expanded="false" hidden>
-                <svg class="truss-health-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                {{-- Also kept: Heroicons has a heart, and this is a heart with a
+                     pulse trace, which is the half that says vital signs rather
+                     than favourite. `truss-health-icon` is load bearing: Truss's
+                     own stylesheet pulses it on a warning or an error. --}}
+                <svg class="truss-health-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
                     <path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>
                 </svg>
                 <span class="truss-health-count" id="truss-health-count" aria-hidden="true" hidden></span>
             </button>
-            <button type="button" class="truss-util" id="truss-legend-btn" title="Legend" aria-expanded="false">▤</button>
+            <button type="button" class="truss-util" id="truss-legend-btn" title="Legend" aria-expanded="false">
+                <x-filament::icon :icon="Heroicon::OutlinedListBullet" />
+            </button>
             <button type="button" class="truss-util" id="truss-theme-btn" title="Theme">◐</button>
         </div>
     </div>
@@ -157,4 +191,4 @@
 <script type="module" src="{{ route('truss.asset', 'truss.js') }}"></script>
 
 {{-- Joins Filament's dark class to the data attribute Truss reads. --}}
-<script src="{{ route('filament-truss.asset', 'filament-truss.js') }}"></script>
+<script src="{{ Asset::url('filament-truss.js') }}"></script>

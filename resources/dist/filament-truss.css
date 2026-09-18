@@ -7,9 +7,8 @@
  * admin including behind the sidebar, and leaves the diagram with no height of
  * its own to sit in.
  *
- * Everything here is layout and containment. Colour is a separate job: matching
- * the panel's palette means driving Truss's theme variables, which are not ours
- * to write, so that waits on a way to build a Truss theme scoped to a selector.
+ * Two jobs, kept apart: the rules above the palette section fit the diagram into
+ * a panel, and the palette section makes it look like one.
  *
  * Loaded after `truss.css`, which is the entire mechanism.
  *
@@ -18,9 +17,37 @@
  * tests/js/containment-css.test.js.
  */
 
-/* The grid and the page background belong to the diagram, not to the admin. */
+/*
+ * The grid belongs to the diagram, not to the admin, and the page background
+ * belongs to Filament.
+ *
+ * Both halves are needed, and the second one is the subtle half. Filament paints
+ * the page with `.fi-body`, inside a Tailwind layer, and an unlayered rule beats
+ * a layered one however weak its selector: Truss's plain `body` rule was already
+ * winning that contest before this sheet existed. So there is nothing to fall
+ * back to. Cancelling Truss's background leaves the page with none at all, which
+ * is invisible against a white canvas in light mode and a white slab around the
+ * diagram in dark.
+ *
+ * The values are Filament's own, from the same custom properties `.fi-body`
+ * reads, so this repaints what the panel would have painted.
+ */
 body {
-    background: none;
+    background: var(--gray-50);
+
+    /* The same rule, the same trap, and the font half of it was missed the
+       first time: `truss.css` sets `body`'s font as well as its background, so
+       this page alone rendered its heading, sidebar, topbar and Filament's own
+       search input in `system-ui`. Handed back to the property Filament sets it
+       from, rather than restated, so a panel with its own typeface keeps it. */
+    font-family: var(--default-font-family);
+}
+
+/* Filament's own class rather than the `data-theme` attribute the palette below
+   uses. This is the panel's background, not Truss's, so it follows the panel's
+   own state and is right on the first paint, before the bridge script runs. */
+:root.dark body {
+    background: var(--gray-950);
 }
 
 #truss-app.truss-embed {
@@ -34,14 +61,22 @@ body {
         var(--bp-bg);
 
     /* A height of its own. Truss's viewport fills the window on a page it owns;
-       here it has to fit a panel that already spent space on chrome. */
+       here it has to fit a panel that already spent space on chrome.
+
+       `--ft-top` is how far down the page the container actually starts,
+       measured and published by filament-truss.js, because the answer is a
+       topbar and a heading this package does not own in a theme it may never
+       have seen. The 12rem is what this rule guessed before that, kept as the
+       fallback so a page where the script never runs is no worse off. The 2rem
+       is the padding Filament leaves under the page, matched so the box stops
+       where the page does. */
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 12rem);
+    height: calc(100vh - var(--ft-top, 12rem) - 2rem);
     min-height: 28rem;
     overflow: hidden;
 
-    border: 1px solid var(--bp-hair, rgba(0, 0, 0, 0.1));
+    border: 1px solid var(--bp-hair);
     border-radius: 0.75rem;
 }
 
@@ -58,4 +93,429 @@ body {
    for this element without checking whether it is there. */
 #truss-app.truss-embed #truss-theme-btn {
     display: none;
+}
+
+/*
+ * The palette.
+ *
+ * Truss repaints the Mermaid output from its own CSS variables, with
+ * `!important` rules that beat the fills Mermaid writes as attributes. That is
+ * why its diagram follows a light/dark change with no re-render, and it is also
+ * why this section is all that is needed: redefine the variables on the
+ * container and the whole thing, chrome and diagram alike, is wearing the
+ * panel's colours. No JavaScript, no second renderer, no palette to keep in step
+ * with Filament's.
+ *
+ * The values come from Filament, which emits its scales (`--primary-*`,
+ * `--gray-*`) as custom properties generated from the panel's own colour
+ * configuration. A panel with a custom primary arrives here for free, and so
+ * does a theme that does not exist yet. No fallbacks: this sheet is served to
+ * one page, inside a panel that always emits these.
+ *
+ * **These `--bp-*` names are Truss internals**, and it says so: its eight
+ * semantic knobs are the public contract. Those knobs are config, read on the
+ * server, and a panel decides its theme in the browser, so they cannot answer
+ * this question. tests/Theme/PaletteTokensTest.php reads the knob map out of
+ * Truss and fails when this list stops covering it.
+ */
+.truss-embed {
+    --bp-ink: var(--primary-600);
+    --bp-focus-border: var(--primary-600);
+    --bp-cyan: var(--primary-500);
+
+    /* The focused table's own fill, which Truss paints a pale cyan. White over
+       the panel's grey is what a Filament card does, and the primary border
+       above already says which table is focused. */
+    --bp-focus-bg: var(--color-white);
+
+    --bp-bg: var(--gray-100);
+    --bp-edge-bg: var(--gray-100);
+
+    --bp-panel: var(--gray-50);
+    --bp-entity-bg: var(--gray-50);
+    --bp-row-odd: var(--gray-50);
+    --bp-field: var(--gray-50);
+    --bp-row-even: var(--gray-100);
+
+    --bp-fg: var(--gray-950);
+    --bp-entity-text: var(--gray-950);
+    --bp-muted: var(--gray-500);
+    --bp-rel: var(--gray-400);
+    --bp-edge: var(--gray-500);
+
+    --bp-entity-border: var(--gray-400);
+    --bp-hair: var(--gray-200);
+    --bp-panel-line: var(--gray-200);
+    --bp-field-line: var(--gray-300);
+
+    /* Not knobs of Truss's own: the blueprint grid, which is drawn by the
+       container rule above rather than by Truss. Mixed from the panel's grey so
+       it reads as texture and never as a table border. */
+    --bp-grid: color-mix(in oklch, var(--gray-400) 14%, transparent);
+    --bp-grid-strong: color-mix(in oklch, var(--gray-400) 24%, transparent);
+
+    /* The severity families, also outside the knob map and also hard-coded
+       upstream: `#e5eefb` on `#12356b` for info, `#fbeeda` on `#8a5a00` for a
+       warning, `#f7dede` on `#a11` for an error. Left alone they are the last
+       blueprint colours on the page, and the large-schema banner is the loudest
+       of them: a pale blue slab across the top of an amber panel.
+
+       Filament emits all three as full scales, so each one has a step to take.
+       100 over 700 is the pairing its own badges use, and it keeps the contrast
+       these carry upstream. */
+    --bp-info-bg: var(--info-100);
+    --bp-info-fg: var(--info-700);
+    --bp-warn-bg: var(--warning-100);
+    --bp-warn-fg: var(--warning-700);
+    --bp-error-bg: var(--danger-100);
+    --bp-error-fg: var(--danger-700);
+}
+
+/*
+ * Dark, on the attribute the bridge script mirrors from Filament's own class.
+ * Filament's greys run one way from 50 to 950, so dark is a different set of
+ * steps rather than a different scale.
+ */
+:root[data-theme="dark"] .truss-embed {
+    --bp-ink: var(--primary-400);
+    --bp-focus-border: var(--primary-400);
+    --bp-cyan: var(--primary-300);
+
+    /* One step up from the entity fill rather than white, which in dark would
+       be a slab. */
+    --bp-focus-bg: var(--gray-800);
+
+    --bp-bg: var(--gray-950);
+    --bp-edge-bg: var(--gray-950);
+
+    --bp-panel: var(--gray-900);
+    --bp-entity-bg: var(--gray-900);
+    --bp-row-odd: var(--gray-900);
+    --bp-field: var(--gray-900);
+    --bp-row-even: var(--gray-800);
+
+    --bp-fg: var(--gray-100);
+    --bp-entity-text: var(--gray-100);
+    --bp-muted: var(--gray-400);
+    --bp-rel: var(--gray-500);
+    --bp-edge: var(--gray-400);
+
+    --bp-entity-border: var(--gray-600);
+    --bp-hair: var(--gray-800);
+    --bp-panel-line: var(--gray-800);
+    --bp-field-line: var(--gray-700);
+
+    --bp-grid: color-mix(in oklch, var(--gray-400) 10%, transparent);
+    --bp-grid-strong: color-mix(in oklch, var(--gray-400) 16%, transparent);
+
+    /* The same three, stepped the other way, exactly as the greys above are.
+       950 is dark enough to read as a tint of the surface rather than a slab,
+       and 400 is the step that stays legible on it. */
+    --bp-info-bg: var(--info-950);
+    --bp-info-fg: var(--info-400);
+    --bp-warn-bg: var(--warning-950);
+    --bp-warn-fg: var(--warning-400);
+    --bp-error-bg: var(--danger-950);
+    --bp-error-fg: var(--danger-400);
+}
+
+/*
+ * The toolbar, wearing the panel's own controls.
+ *
+ * The palette above already gives these their colours, which is why they turn
+ * dark with the panel. What it cannot give them is shape and type. Truss styles
+ * its toolbar for a dashboard it owns: monospace at 12.5px, a 2px radius and a
+ * hairline border. Filament's inputs are its own typeface at 14px, rounded to
+ * `--radius-lg`, and carry a ring and a shadow instead of a border. Set beside a
+ * real Filament search field, that difference is the last thing on this page
+ * that still reads as a visitor.
+ *
+ * The values are Filament's own, measured from a rendered input in a panel
+ * rather than guessed: 14px on 24px, 6px by 12px so the control comes to 36px,
+ * `--radius-lg`, a 1px ring of `--gray-950` at 10 percent over a soft shadow,
+ * and a solid 2px `--primary-600` ring on focus. Custom properties wherever
+ * Filament exposes one, so a panel with a custom primary or a custom radius
+ * arrives here for free, exactly as the palette does.
+ *
+ * Dark follows Filament's own `dark` class rather than the `data-theme`
+ * attribute the palette uses. The palette is driving Truss's switch, so it wants
+ * Truss's attribute; this is Filament's chrome, and keying it to Filament's
+ * class means it is right on the first paint, before the bridge script runs.
+ *
+ * These rules hang off `ft-controls`, a class this package adds in its own
+ * Blade. The toolbar markup is ours to write, so keying our chrome to our own
+ * class means an upstream rename costs us the Blade and not this sheet as well.
+ *
+ * Scoped to the toolbar on purpose: the diagram is monospaced because a schema
+ * reads better in columns that line up, and it stays that way.
+ */
+/*
+ * The bar itself, before the controls in it.
+ *
+ * The container is a column flexbox, so the toolbar is a flex child and shrinks:
+ * Truss asks for 54px and it was rendering at 43. Two things followed, and the
+ * second took some finding. It looked cramped once the controls grew to
+ * Filament's 36px, and the health badge was clipped, because it rides 4px above
+ * its own button and a short bar put that 4px over the container's
+ * `overflow: hidden` edge. `flex: none` fixes both.
+ */
+#truss-app.truss-embed .ft-controls {
+    flex: none;
+    height: auto;
+    padding: 0.75rem 1rem;
+
+    /* White, because that is what a header is in this panel. Truss paints the
+       bar from `--bp-panel`, which the palette maps to `--gray-50`: the same
+       colour as the page behind it, where a Filament table header is `#fff`
+       over that grey. Measured side by side rather than judged by eye.
+
+       Set here rather than by moving `--bp-panel`, which also paints the
+       legend, the menus and the footer. This is the one bar being compared
+       with a Filament header, so it is the one that changes. */
+    background: var(--color-white);
+}
+
+/* Filament's card is `--gray-900` in dark, which is where `--bp-panel` already
+   landed. Restated because the rule above would otherwise paint a white bar
+   into a dark panel. */
+:root.dark #truss-app.truss-embed .ft-controls {
+    background: var(--gray-900);
+}
+
+#truss-app.truss-embed .ft-controls input[type="search"],
+#truss-app.truss-embed .ft-controls input[type="text"],
+#truss-app.truss-embed .ft-controls input[type="number"],
+#truss-app.truss-embed .ft-controls select {
+    font-family: var(--default-font-family);
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+    letter-spacing: 0;
+    padding: 0.375rem 0.75rem;
+    color: var(--gray-950);
+    background: var(--color-white);
+    border: 0;
+    border-radius: var(--radius-lg);
+    box-shadow:
+        0 0 0 1px color-mix(in oklab, var(--gray-950) 10%, transparent),
+        0 1px 3px 0 rgb(0 0 0 / 0.1),
+        0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Truss sizes this for a 9px inset; 12px of padding leaves a two digit depth
+   with nowhere to go. */
+#truss-app.truss-embed .ft-controls input[type="number"] {
+    width: 4.5rem;
+}
+
+:root.dark #truss-app.truss-embed .ft-controls input[type="search"],
+:root.dark #truss-app.truss-embed .ft-controls input[type="text"],
+:root.dark #truss-app.truss-embed .ft-controls input[type="number"],
+:root.dark #truss-app.truss-embed .ft-controls select {
+    color: var(--color-white);
+    background: color-mix(in oklab, var(--color-white) 5%, transparent);
+}
+
+/* Truss rings in `--bp-ink` at 22 percent and keeps its border. Filament drops
+   the grey ring for a solid primary one and never draws a border, so the ring
+   is the whole focus state. */
+#truss-app.truss-embed .ft-controls input:focus,
+#truss-app.truss-embed .ft-controls select:focus {
+    outline: none;
+    border: 0;
+    box-shadow:
+        0 0 0 2px var(--primary-600),
+        0 1px 3px 0 rgb(0 0 0 / 0.1),
+        0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+:root.dark #truss-app.truss-embed .ft-controls input:focus,
+:root.dark #truss-app.truss-embed .ft-controls select:focus {
+    box-shadow:
+        0 0 0 2px var(--primary-500),
+        0 1px 3px 0 rgb(0 0 0 / 0.1),
+        0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* The field labels, which Truss sets in the same monospace as the diagram. */
+#truss-app.truss-embed .ft-controls .truss-field-label {
+    font-family: var(--default-font-family);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--gray-600);
+}
+
+:root.dark #truss-app.truss-embed .ft-controls .truss-field-label {
+    color: var(--gray-400);
+}
+
+/* The fallback, not the mechanism. These two carry `fi-checkbox-input` in the
+   Blade, so Filament styles them outright with `appearance: none` and rules for
+   every state. This stays because that is a Filament class name rather than one
+   of ours: if it is ever renamed, the checkboxes degrade to native controls
+   tinted with the panel primary rather than to whatever blue the operating
+   system paints next to an amber panel. */
+#truss-app.truss-embed .ft-controls input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--primary-600);
+}
+
+:root.dark #truss-app.truss-embed .ft-controls input[type="checkbox"] {
+    accent-color: var(--primary-500);
+}
+
+/*
+ * The utility buttons, which are toggles and not fields.
+ *
+ * Filament draws a line in its own table header and this sheet was on the wrong
+ * side of it: the search box carries a box because it is a field, and the filter
+ * and column buttons carry none because they are icon toggles. Export, health
+ * and legend are toggles, and they had the field treatment, which was only ever
+ * legible because the bar itself used to be grey.
+ *
+ * Read out of the panel's compiled stylesheet rather than guessed: `.fi-icon-btn`
+ * is 36 by 36 at `--radius-lg`, painted `--gray-500` with no background, no ring,
+ * no shadow and no border, darkening to `--gray-600` on hover, and taking a 2px
+ * primary ring on focus-visible. Filament never fills one on hover.
+ *
+ * The one thing deliberately not copied is its `margin: calc(var(--spacing) *
+ * -2)`, which assumes the padding of a Filament container. This toolbar has
+ * padding of its own, and borrowing that margin standalone would pull the
+ * buttons into the bar's edge.
+ *
+ * `background: transparent` rather than no rule at all, because Truss fills
+ * these from `--bp-field` and saying nothing leaves that fill in place.
+ */
+#truss-app.truss-embed .ft-controls .truss-util {
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--gray-500);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+}
+
+:root.dark #truss-app.truss-embed .ft-controls .truss-util {
+    color: var(--gray-500);
+}
+
+#truss-app.truss-embed .ft-controls .truss-util:hover {
+    color: var(--gray-600);
+}
+
+:root.dark #truss-app.truss-embed .ft-controls .truss-util:hover {
+    color: var(--gray-400);
+}
+
+/* With the box gone this is what a keyboard user has left, so it matters more
+   here than on the inputs, where the ring is a second signal on a control that
+   is already outlined. */
+#truss-app.truss-embed .ft-controls .truss-util:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-600);
+}
+
+:root.dark #truss-app.truss-embed .ft-controls .truss-util:focus-visible {
+    box-shadow: 0 0 0 2px var(--primary-500);
+}
+
+/* Truss colours the health button by what the doctor found, and the base rule
+   above out-specifies it, so the icon sat grey beside a red count. Restated
+   here now that `--bp-error-fg` and `--bp-warn-fg` are the panel's own danger
+   and warning rather than the blueprint hexes they were until today. Before the
+   open state below, so an open panel still reads as open. */
+#truss-app.truss-embed .ft-controls .truss-util[data-severity="error"] {
+    color: var(--bp-error-fg);
+}
+
+#truss-app.truss-embed .ft-controls .truss-util[data-severity="warning"] {
+    color: var(--bp-warn-fg);
+}
+
+/* Kept from Truss rather than dropped with the rest, and restated because the
+   rules above out-specify its own open-state colours. Filament's dropdowns hang
+   off their trigger and need no open state; the legend and the health panel
+   overlay the canvas, so which one is open is worth saying. Last in the block on
+   purpose: an open button stays filled while the pointer is over it. */
+#truss-app.truss-embed .ft-controls .truss-util[aria-expanded="true"] {
+    color: var(--color-white);
+    background: var(--primary-600);
+}
+
+/*
+ * The export menu's hover and the focus combobox's active option.
+ *
+ * Truss paints both from `--bp-info-bg`, a pale blue, and next to Filament's own
+ * dropdowns they read as another design system. Filament hovers a dropdown item
+ * with `--gray-50` over a white panel; Truss's menu panel is itself `--gray-50`,
+ * so the same value here would be a hover you cannot see. One step further along
+ * the same scale keeps Filament's idea and stays visible.
+ *
+ * Overridden here rather than by remapping the token: `--bp-info-bg` also means
+ * "info" in the banners, the health panel and the diagram's own markers, and a
+ * hover state is not a severity. The severity families stay Truss's.
+ *
+ * `aria-disabled` is excluded because these selectors out-specify the rule that
+ * dims an export this page cannot perform, and a disabled item that lights up on
+ * hover is an offer the page cannot keep.
+ */
+#truss-app.truss-embed .truss-menu button:not([aria-disabled="true"]):hover,
+#truss-app.truss-embed .truss-menu button:not([aria-disabled="true"]):focus-visible,
+#truss-app.truss-embed .truss-combo-opt.is-active {
+    color: var(--gray-950);
+    background: var(--gray-100);
+}
+
+:root.dark #truss-app.truss-embed .truss-menu button:not([aria-disabled="true"]):hover,
+:root.dark #truss-app.truss-embed .truss-menu button:not([aria-disabled="true"]):focus-visible,
+:root.dark #truss-app.truss-embed .truss-combo-opt.is-active {
+    color: var(--gray-100);
+    background: color-mix(in oklab, var(--color-white) 7%, transparent);
+}
+
+/*
+ * The chrome around the diagram, in the panel's voice.
+ *
+ * Truss's dashboard is monospaced throughout, which is right for a page whose
+ * whole subject is a schema. Inside a panel the line falls somewhere else:
+ * identifiers stay monospaced, because columns of them line up and people copy
+ * them out, and the words the interface says in its own voice belong in the
+ * panel's typeface.
+ *
+ * So this sweeps the footer, the legend and panel headings, the export menu and
+ * the zoom readout. It deliberately leaves the canvas, the legend's PK and FK
+ * keys, which are the diagram's own notation, the focus picker's list, which is
+ * table names, and the health and diff bodies, which are dense with identifiers
+ * and rule codes.
+ *
+ * One caveat worth knowing before editing: `.truss-menu` is built by Truss's
+ * JavaScript rather than written in our Blade, unlike everything else named
+ * here, so it is the single selector in this block that an upstream rename
+ * would reach.
+ */
+#truss-app.truss-embed .truss-footer,
+#truss-app.truss-embed .truss-banner,
+#truss-app.truss-embed .truss-legend-head,
+#truss-app.truss-embed .truss-diff-head,
+#truss-app.truss-embed .truss-health-head,
+#truss-app.truss-embed .truss-menu button,
+#truss-app.truss-embed .truss-menu-note,
+#truss-app.truss-embed .truss-zoom button,
+#truss-app.truss-embed #truss-zoom-pct {
+    font-family: var(--default-font-family);
+    letter-spacing: 0;
+}
+
+/* Truss sets these at 11px, which is a monospace size. The same measure in a
+   proportional face reads a step smaller, so they come up to Filament's own
+   small text. */
+#truss-app.truss-embed .truss-footer,
+#truss-app.truss-embed .truss-banner,
+#truss-app.truss-embed .truss-legend-head,
+#truss-app.truss-embed .truss-diff-head,
+#truss-app.truss-embed .truss-health-head,
+#truss-app.truss-embed .truss-zoom button {
+    font-size: 0.75rem;
 }

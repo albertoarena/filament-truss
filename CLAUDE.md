@@ -8,14 +8,14 @@
 Filament panel, built on `albertoarena/laravel-truss`. Structure only, no data is
 ever exposed.
 **License:** MIT
-**Status:** In development. Nothing is released; there is no `v0.1.0` yet.
+**Status:** In development. Nothing is released; there is no `v1.0.0` yet.
 
 ## Stack
 
 - PHP 8.2+ (matching Truss, which matches Laravel 12)
 - Laravel 12+
 - Filament 5+ (**never target Filament 4**, see `docs/DECISIONS.md`)
-- `albertoarena/laravel-truss` v1.12.0+ for the schema, the diff and the findings
+- `albertoarena/laravel-truss` v1.13.0+ for the schema, the diff and the findings
 - Pest for testing
 - Mermaid for diagram rendering, which comes from Truss rather than from here
 
@@ -64,6 +64,12 @@ checklist that stands in for a browser test, and it is a release gate.
 - **Truss stays Filament-free.** Nothing in this package may require a change
   that gives Truss a Filament dependency. That separation is the whole reason
   there are two packages.
+- **Once the repository is public, work lands through a pull request.** `main` is
+  protected: no force pushes, no deletions, and every check must pass. The
+  maintainer can still push directly, and that is not a licence to. **The one
+  exception is a markdown-only change**, which may go straight to `main`.
+  Anything touching code, tests, config, CI or the shipped assets goes through a
+  PR, one-line fixes included.
 - **Git commits:** `type: short subject` (max 50 chars), then a body paragraph
   explaining what and why, not how. Never include "Generated with Claude Code" or
   "Co-Authored-By: Claude". Use a heredoc for multi-line commit messages. The

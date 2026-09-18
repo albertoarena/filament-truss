@@ -150,6 +150,41 @@ about the other, so a light panel could hold a dark diagram. A few lines mirror
 one to the other, and Truss's own theme button is hidden so there is no second
 control to disagree with the panel.
 
+## Drive Truss's private theme tokens, not its public knobs
+
+**Context:** Truss has a documented theming API, eight semantic knobs under
+`truss.theme` that it turns into a stylesheet. It is the obvious thing to reach
+for and it cannot do this job: the knobs are config, resolved on the server,
+once, and a Filament panel decides its palette in the browser, per panel, and
+changes it at runtime with a toggle. Behind those knobs are the `--bp-*` custom
+properties Truss calls private.
+**Decision:** map Filament's own scales onto the private tokens, scoped to the
+diagram's container, in light and dark. A theme set in `truss.theme` is left to
+the standalone dashboard and is not applied to the panel page.
+**Trade-off:** a second dependency on something upstream does not promise, next
+to the reproduced markup. It is guarded the same way, by a test that reads the
+knob map out of Truss and fails when the mapping stops covering it, and it buys
+the thing the knobs cannot buy: a diagram that follows the panel it is in,
+including a custom primary colour and a theme that does not exist yet. **The ask
+that would retire this** is knob-level custom properties in Truss, so a host can
+theme from CSS rather than only from config. That belongs upstream, raised there,
+in a session working in that repository.
+
+## Keep the export endpoint, even though the schema endpoint is dropped
+
+**Context:** the page embeds its payload, so it declares no schema endpoint. The
+export endpoint was dropped along with it, which looked consistent and was not:
+Truss reads the absent attribute as "this page has no server" and greys out
+Markdown, DBML, JSON and CSV. PNG and SVG kept working because they are drawn
+from the DOM, which is exactly what made the gap easy to miss.
+**Decision:** keep `data-export-endpoint`. There is a server here, the route is
+the same one the dashboard uses, and this page already answers the same
+authorization question that route asks.
+**Trade-off:** those four exports are a server round trip that re-reads the
+schema, where the diagram itself costs none. That is what they are on the
+dashboard too, and the alternative is a panel that silently offers less than the
+page it is at parity with.
+
 ## Documentation splits between this README and trussphp.com
 
 **Context:** two packages, and a documentation site that already exists for the
@@ -184,3 +219,173 @@ real schema and not real resources. **One thing to check before the v0.2 feature
 is ever screenshotted:** on a panel covering only part of its database, most
 tables will come back unmapped, which is either the feature demonstrating itself
 perfectly or a misleading first impression.
+
+## The focus deep link moves into v0.1, the rest of resource linking does not
+
+**Context:** the entry above put every part of resource linking in v0.2, written
+before anything had been tried in a panel. What a browser then showed is that the
+two halves cost nothing like the same. Truss parses `focus` from the query string
+and applies it on load, so a button opening `database-schema?focus=books` needs
+no JavaScript of ours, no addition to the payload and no second renderer. The
+other half, reporting which tables no resource manages, still needs the panel's
+own map of resources and a judgement about what unmapped means.
+**Decision:** ship the deep link in v0.1 as `ViewInSchemaAction`, with
+`HasViewInSchemaAction` opting a resource in. Leave the unmapped-table finding in
+v0.2.
+**Trade-off:** it widens v0.1 by a feature, against a first release with nothing
+in it that a diagram in a frame does not also have. The button is the screenshot
+that explains why this is a plugin rather than a link to a dashboard, and it is
+small enough that leaving it out costs more than putting it in.
+
+**Three guards, all of them learned rather than guessed.** Hide when the panel
+being rendered has no such page, because a resource shared between two panels
+would otherwise throw where the plugin is not registered. Hide unless the page's
+own access rule allows this viewer, because listing a resource is not reading the
+database structure. Hide when Truss excludes the table, because `?focus=cache` is
+ignored and a button that does nothing gets reported as a bug. Removed rather
+than disabled, since a viewer can do nothing about any of the three and a greyed
+control invites them to try.
+
+**The exclusion question is answered from config, not from a payload.** It is
+asked once per button and `Truss::payload()` reads the whole schema, so the
+merge Truss does over `excluded_tables` is repeated in one small class of ours
+with its own test. The parameter name is pinned from the other side by a Vitest
+case that imports `url-state.js` out of `vendor/`, so an upstream rename fails on
+the upgrade instead of shipping a button that opens an unfocused diagram.
+
+## Hiding and revealing tables is Truss's, and this package adds no control
+
+**Context:** a panel on a 16 table database draws 8 of them, because Truss
+excludes framework plumbing by config, and nothing on the page said so. The
+plugin-shaped answer was an option here, `->revealExcludedTables()`, so an
+application could decide per panel. Truss v1.13.0 answered it first and answered
+it differently: the payload always carries `excluded.count`, the footer reads
+`8 of 16 tables`, and a **Show hidden tables** toggle draws the hidden ones muted
+when `truss.reveal_excluded` lets them leave the server at all (on in local, off
+elsewhere, matching `enabled` and the `viewTruss` gate, and with no query
+parameter, so the decision stays the operator's and never the viewer's).
+**Decision:** take that mechanism whole. This package reproduces the two elements
+the toggle needs, `truss-show-excluded-field` and `truss-show-excluded`, and adds
+nothing beside them: no plugin method, no config key of our own, no page action,
+no override of what the application configured.
+**Trade-off:** a panel cannot reveal tables `reveal_excluded` keeps on the
+server, and an application that wants the toggle outside `local` says so in
+Truss's config rather than in the plugin registration. That is the point and not
+the price. An option here would be a second switch answering a question Truss
+already answers, and the two would eventually disagree: someone who excluded a
+table to keep it off a shared panel would find a plugin flag putting it back.
+**It is the authorization-parity rule applied to visibility**, which is the same
+argument about the same boundary, in a different place.
+
+**What this package still owes the feature** is the markup and the manual check,
+because the toggle is upstream's and the container is ours. The drift guard is
+what makes that an upgrade-time failure rather than a silent one.
+
+## Match Filament's controls by recipe, and borrow its class only for the checkbox
+
+**Context:** the palette gives the toolbar its colours, so the controls turn dark
+with the panel, but it cannot reach shape or type. Truss styles its toolbar for a
+dashboard it owns: monospace at 12.5px, a 2px radius, a hairline border. Beside a
+real Filament search field that was the last thing on the page still reading as a
+visitor. Two ways to fix it: reproduce Filament's look from its own custom
+properties, or borrow Filament's own classes and get the real thing.
+**Decision:** both, split by what each is good at. The text inputs, labels and
+utility buttons are restyled in our stylesheet from Filament's properties
+(`--radius-lg`, `--primary-600`, `--default-font-family`, the greys), keyed to
+`ft-controls`, a class this package adds in its own Blade. The two checkboxes
+carry Filament's own `fi-checkbox-input`.
+**Trade-off:** the recipe is an imitation and can drift as Filament's inputs
+evolve, which is the price of not depending on its class names. The checkbox is
+the one control where that price is not worth paying: a native checkbox is
+painted by the operating system and `accent-color` reaches only the checked fill,
+so an unchecked box stays the wrong grey whatever we write. Filament styles
+`input[type=checkbox].fi-checkbox-input` outright, across the rest, checked,
+focus, disabled and dark states, and needs no wrapper. Our `accent-color` rule
+stays behind it as a fallback, so a rename upstream degrades to a primary-tinted
+native control rather than to an operating-system blue.
+
+**Two borrowings considered and rejected**, both after reading the panel's
+compiled stylesheet. `fi-input-wrp` carries the input chrome, but adopting it
+means wrapping every field in markup Filament expects, and the focus combobox
+anchors an absolutely positioned listbox to its own container, so the wrapper
+buys what the recipe already gives at the cost of the one control most likely to
+break. `fi-icon-btn` carries `margin: calc(var(--spacing) * -2)`, a negative
+margin that assumes the padding of a Filament container that is not there.
+
+**Keyed to `ft-controls` rather than to `.truss-toolbar` on purpose.** The
+toolbar markup is reproduced in this package, so hanging our chrome on a class of
+our own means an upstream rename costs the Blade and not the stylesheet as well.
+
+## The utility buttons are toggles, so they lose the box the fields keep
+
+**Context:** the entry above gave the inputs, the labels and the utility buttons
+the same treatment, on the argument that rounding the fields and leaving the
+buttons at Truss's 2px would read as a mistake. Side by side with a resource list
+that turned out to be the wrong grouping. **Filament draws the line elsewhere:**
+in its own table header the search box carries a box because it is a field, and
+the filter and column buttons carry none because they are icon toggles. Export,
+health and legend are toggles, and they had the field treatment. It was only
+legible at all while the bar itself was grey; once the bar went white it was the
+difference a person noticed first.
+**Decision:** take Filament's icon button recipe for the three, read from the
+panel's compiled stylesheet: 36 by 36 at `--radius-lg`, `--gray-500`, no
+background, no ring, no shadow, no border, darkening to `--gray-600` on hover,
+with a 2px primary ring on focus-visible. Keep the fields exactly as they are.
+**Trade-off:** less of Truss's identity in the toolbar, which was the argument for
+leaving it. What replaced it is Filament's own distinction between a field and a
+toggle, which is a better thing for the page to be saying than a border.
+
+**Two deliberate departures.** Filament's `margin: calc(var(--spacing) * -2)` is
+not copied, for the reason the entry above already rejected `fi-icon-btn`: it
+assumes a container's padding that this toolbar does not have. And **Truss's open
+state is kept**, filled in the panel primary on `aria-expanded="true"`. Filament's
+dropdowns hang off their trigger and need no such state; the legend and the health
+panel overlay the canvas, so which one is open is worth saying. With the box gone
+that fill is the only chrome these buttons ever carry: nothing until open, then
+filled.
+
+## Borrow Heroicons for three toolbar glyphs, and keep two of Truss's
+
+**Context:** the toolbar's five utility buttons were Truss's, and two of them
+were not icons at all: `⋯` for more-controls and `▤` for the legend, sized by
+`font-size` and drawn by whatever the platform had. The other three were line
+icons on a 24 grid at `stroke-width: 2`, where Heroicons, which the panel is
+already full of, draws at 1.5.
+**Decision:** swap the three where the shipped set says the same thing (more
+controls to `ellipsis-horizontal`, legend to `list-bullet`, export to
+`arrow-down-tray`, which is Filament's own download idiom), through Filament's
+icon component so a panel that swapped the set gets its own. Keep diff and
+health, and redraw them at Heroicons' geometry.
+**Trade-off:** a mixed set, which is the point rather than a compromise. No icon
+set has a glyph for "what changed since the last migration", and the nearest
+Heroicons offers means refresh, which would be a lie on a button. Truss's health
+icon is a heart with a pulse trace where Heroicons has a plain heart, and the
+trace is the half that says vital signs rather than favourite. Matching the
+stroke and the box is what makes the two survivors read as members of the same
+family rather than as leftovers.
+
+**Two things this rests on.** The buttons are Truss's and are found by id, but
+their contents are ours, and the drift guard checks ids, so swapping what is
+inside cannot reach it. And `truss-health-icon` is load bearing: Truss's own
+stylesheet pulses that class on a warning or an error, with a reduced-motion
+opt-out, so it survives the restyle and has a test of its own saying why.
+
+## The project link is on by default, and removable in one call
+
+**Context:** the page carries a subheading saying where the diagram comes from
+and what it will never show, and a link to the project beside it. The subheading
+is for whoever is looking at the panel; the link is for the developer who
+installed it.
+**Decision:** both ship on. The link is a header action controlled by
+`FilamentTrussPlugin::make()->documentationLink(false)`.
+**Trade-off:** one more line of plugin API, and a default that puts our name in
+someone else's admin. **A plugin that links to its own repository from a panel it
+does not own, with no way to remove it, is a plugin with a billboard in it**, and
+the panel's owner has to be able to take it down without forking the page. On by
+default because it is genuinely where the person looking at this page goes next,
+and because a plugin nobody can find the documentation for is worse than one that
+says where it is.
+
+**The subheading is not switchable**, deliberately. It is one sentence, it names
+the promise in the place where the person who would most want to know it is
+looking, and a panel that wants different words can translate it.
