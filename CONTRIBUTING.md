@@ -2,9 +2,13 @@
 
 Thanks for considering a contribution.
 
-**Nothing is released yet.** The package builds and its suites run, but there is
-no `v1.0.0` tag, so anything here can still change. Until there is one, the most
-useful contribution is a question or an issue rather than a pull request.
+**The package is released and on Packagist**, so `main` is what people have
+already installed. It is a protected branch: work lands through a pull request,
+every check has to pass, and [`CHANGELOG.md`](CHANGELOG.md) records what each
+release changed.
+
+An issue is still the best place to start anything larger than a fix. A question
+costs nothing, and it is cheaper than a pull request that has to be turned down.
 
 ## Workflow
 

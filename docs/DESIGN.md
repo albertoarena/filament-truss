@@ -56,9 +56,9 @@ subset into the Mermaid definition. **The focus picker is an input to the thing
 that draws the diagram, not decoration around it.** So "rebuild the chrome
 natively, keep the canvas" cuts across the code rather than along it.
 
-**v0.1 re-drives that pipeline rather than reimplementing it.** Reimplementing
-selection and definition in PHP would mean a second renderer to keep in step with
-the first, for ever.
+**This package re-drives that pipeline rather than reimplementing it.**
+Reimplementing selection and definition in PHP would mean a second renderer to
+keep in step with the first, for ever.
 
 ## What the exclusion list hides, and who may reveal it
 
@@ -103,8 +103,8 @@ Three ways out, in ascending order of cost and of correctness:
    the honest seam and it is what this package actually wants.
 
 **This package is the first real consumer**, which is exactly why option 3 should
-be designed from what is built here rather than in advance. Until then, expect
-v0.1 to live with option 1 and to pin a Truss version.
+be designed from what is built here rather than in advance. Until then, v1.0
+lives with option 1 and pins a Truss version.
 
 ## Authorization
 
@@ -201,8 +201,8 @@ Two things fall out, and the second is the more interesting:
 **Nobody can copy this without a panel.** It is the difference between the same
 diagram in a frame and a plugin.
 
-**The half that costs nothing is in v0.1.** Truss reads `focus` from the query
-string and applies it on load, so a button that opens
+**The half that costs nothing shipped in v1.0.** Truss reads `focus` from the
+query string and applies it on load, so a button that opens
 `database-schema?focus=books` is a link rather than a feature: no JavaScript of
 ours, no addition to the payload, nothing new to keep in step with the renderer.
 That is `ViewInSchemaAction`, and `HasViewInSchemaAction` opts a resource in with
@@ -224,17 +224,18 @@ the question is asked once per button and `Truss::payload()` reads the whole
 schema to answer it. Any no removes the button rather than disabling it, because
 there is nothing the viewer could do about any of the three.
 
-**The half that needs the panel's own knowledge waits for v0.2**: reading every
+**The half that needs the panel's own knowledge is still to come**: reading every
 registered resource to report which tables no resource manages. That is a
 finding rather than a link, and it needs a panel that genuinely has resources.
 
 ## Scope by version
 
-**v0.1**: the diagram, the focus picker, the panel's theme, and the focus deep
-link from a resource. Dogfoodable against a scratch Filament 5 panel pointed at a
-real schema, because an ER diagram needs a real schema and not real resources.
+**v1.0, released**: the diagram, the focus picker, the panel's theme, and the
+focus deep link from a resource. Dogfoodable against a scratch Filament 5 panel
+pointed at a real schema, because an ER diagram needs a real schema and not real
+resources.
 
-**v0.2**: the rest of resource linking, including the unmapped-table finding.
+**Next**: the rest of resource linking, including the unmapped-table finding.
 This one needs a panel that genuinely has resources.
 
 **Later, undecided**: the structural findings as a page of their own. Truss
