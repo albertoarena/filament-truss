@@ -11,7 +11,7 @@ lives in its commit, and the decisions behind a feature in
 
 ## [Unreleased]
 
-Everything below is the first release, `v0.1.0`, and becomes that heading when it
+Everything below is the first release, `v1.0.0`, and becomes that heading when it
 is tagged.
 
 ### Added

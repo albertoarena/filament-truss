@@ -9,7 +9,7 @@
 [![Tests](https://github.com/albertoarena/filament-truss/actions/workflows/run-tests.yml/badge.svg)](https://github.com/albertoarena/filament-truss/actions/workflows/run-tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/albertoarena/filament-truss.svg)](https://packagist.org/packages/albertoarena/filament-truss)
 
-> **Not released yet.** The first tag will be `v0.1.0`, and until it exists
+> **Not released yet.** The first tag will be `v1.0.0`, and until it exists
 > `composer require` will not find this package. Everything below describes what
 > that release installs.
 

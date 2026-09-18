@@ -8,7 +8,7 @@
 Filament panel, built on `albertoarena/laravel-truss`. Structure only, no data is
 ever exposed.
 **License:** MIT
-**Status:** In development. Nothing is released; there is no `v0.1.0` yet.
+**Status:** In development. Nothing is released; there is no `v1.0.0` yet.
 
 ## Stack
 
