@@ -76,6 +76,15 @@ that depend on markup this package reproduces rather than owns.
 - [ ] The footer shows a table count and a last-updated time.
 - [ ] Narrow the window: the more-controls (`⋯`) button appears and opens the
       secondary controls.
+- [ ] **Now do it without narrowing the window**, which is the case this page
+      has and Truss's own dashboard does not. At a 1280px window with the
+      sidebar expanded, the panel spends roughly 470px of it and the toolbar
+      gets about 810px. The `⋯` button must appear and the **Filter** field must
+      keep a usable width. It read the window until Truss v1.13.1, so the bar
+      was 810px wide while the steps believed they had 1280px, and the Filter
+      field (the one control with no minimum width) collapsed to an empty
+      square. A wide window is not the same as a wide toolbar, and only this
+      check tells them apart.
 - [ ] Another page of the panel is unaffected. The stylesheet resets `body`, so
       this is the one check that it stays scoped.
 

@@ -38,8 +38,11 @@ gains no write path just because it lives inside an admin panel.
 - PHP `^8.2`
 - Laravel `^12.0 | ^13.0`
 - Filament `^5.0`
-- `albertoarena/laravel-truss` `^1.13`, which is where the schema, the diff and
-  the structural findings come from
+- `albertoarena/laravel-truss` `^1.13.1`, which is where the schema, the diff
+  and the structural findings come from. The floor is a patch above the line's
+  first release on purpose: v1.13.1 is what stops the toolbar's Filter field
+  collapsing when the diagram is embedded in something narrower than the window,
+  which is every panel
 
 Filament 4 is deliberately not supported. See [`docs/DECISIONS.md`](https://github.com/albertoarena/filament-truss/blob/main/docs/DECISIONS.md).
 
