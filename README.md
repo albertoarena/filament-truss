@@ -9,10 +9,6 @@
 [![Tests](https://github.com/albertoarena/filament-truss/actions/workflows/run-tests.yml/badge.svg)](https://github.com/albertoarena/filament-truss/actions/workflows/run-tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/albertoarena/filament-truss.svg)](https://packagist.org/packages/albertoarena/filament-truss)
 
-> **Not released yet.** The first tag will be `v1.0.0`, and until it exists
-> `composer require` will not find this package. Everything below describes what
-> that release installs.
-
 A live **ER diagram (ERD)** of your real database, as a native page inside a
 [Filament](https://filamentphp.com) panel. Built on
 [Laravel Truss](https://github.com/albertoarena/laravel-truss), which reads the

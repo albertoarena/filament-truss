@@ -9,10 +9,7 @@ Entries say what changed and what it means for you. The reasoning behind a chang
 lives in its commit, and the decisions behind a feature in
 [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
-## [Unreleased]
-
-Everything below is the first release, `v1.0.0`, and becomes that heading when it
-is tagged.
+## [1.0.0] - 2026-09-18
 
 ### Added
 
