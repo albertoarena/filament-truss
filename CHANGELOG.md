@@ -9,6 +9,20 @@ Entries say what changed and what it means for you. The reasoning behind a chang
 lives in its commit, and the decisions behind a feature in
 [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
+## [Unreleased]
+
+### Fixed
+
+- The toolbar's **Filter** field no longer collapses to an empty square in a
+  panel with an expanded sidebar. Truss sized the toolbar's responsive steps
+  from the window until v1.13.1, so a 1280px window that leaves the bar around
+  810px fired none of them, and since every other control is floored at its own
+  content width the entire shortfall landed on the Filter field. The fix is
+  upstream, in Truss, where the steps now follow the bar's own width; what
+  changes here is the floor, now `^1.13.1`, so that upgrading this package
+  carries the fix rather than leaving it to whenever the host next resolves
+  Truss. Nothing in this package's own markup, styles or script changed.
+
 ## [1.0.0] - 2026-09-18
 
 ### Added
