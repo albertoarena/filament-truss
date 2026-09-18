@@ -18,6 +18,7 @@ database you actually have rather than the migrations you think you ran.
 promise of Truss and this package inherits it without exception.
 
 [![Read the docs](https://img.shields.io/badge/Read%20the%20docs-f59e0b?style=for-the-badge)](https://trussphp.com/filament/?utm_source=github&utm_medium=readme&utm_campaign=filament-truss)
+[![Demo app](https://img.shields.io/badge/Demo%20app-f59e0b?style=for-the-badge)](https://github.com/albertoarena/filament-truss-demo)
 
 ## What it is, and what it is not
 
