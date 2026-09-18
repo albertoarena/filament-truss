@@ -63,12 +63,12 @@ the first, for ever.
 ## What the exclusion list hides, and who may reveal it
 
 Truss removes framework plumbing from the diagram by config, so a panel sitting
-on 17 tables draws 8 of them. Until v1.13.0 nothing on the page said so, which
-reads as Truss failing to see the other nine rather than as a setting doing its
+on 16 tables draws 8 of them. Until v1.13.0 nothing on the page said so, which
+reads as Truss failing to see the other eight rather than as a setting doing its
 job.
 
 **The whole mechanism is Truss's and this package supplies only the markup.** The
-footer says `8 of 17 tables` because `excluded.count` is in the payload; the
+footer says `8 of 16 tables` because `excluded.count` is in the payload; the
 **Show hidden tables** toggle draws the hidden ones muted, and they reach the
 browser at all only where `truss.reveal_excluded` allows it (on in `local`, off
 elsewhere, matching `truss.enabled` and the `viewTruss` gate). There is no query

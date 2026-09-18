@@ -45,7 +45,7 @@ gains no write path just because it lives inside an admin panel.
 - `albertoarena/laravel-truss` `^1.13`, which is where the schema, the diff and
   the structural findings come from
 
-Filament 4 is deliberately not supported. See [`docs/DECISIONS.md`](docs/DECISIONS.md).
+Filament 4 is deliberately not supported. See [`docs/DECISIONS.md`](https://github.com/albertoarena/filament-truss/blob/main/docs/DECISIONS.md).
 
 ## Installation
 
@@ -141,8 +141,8 @@ about it, and a greyed control invites them to try.
 ## Hidden tables
 
 Truss keeps framework plumbing out of the diagram through its own
-`truss.excluded_tables`, so a panel on 17 tables may draw 8 of them. The footer
-says so (`8 of 17 tables`), and where `truss.reveal_excluded` allows it, a **Show
+`truss.excluded_tables`, so a panel on 16 tables may draw 8 of them. The footer
+says so (`8 of 16 tables`), and where `truss.reveal_excluded` allows it, a **Show
 hidden tables** toggle draws them muted. That is on by default in `local` and off
 elsewhere, matching `truss.enabled` and the `viewTruss` gate.
 
@@ -177,10 +177,10 @@ screenshots and the guide.
 
 In this repository:
 
-- [`docs/DESIGN.md`](docs/DESIGN.md): architecture, and how the page gets its data
-- [`docs/DECISIONS.md`](docs/DECISIONS.md): why it is built this way
-- [`CONTRIBUTING.md`](CONTRIBUTING.md): how to work on it
-- [`CHANGELOG.md`](CHANGELOG.md): what changed
+- [`docs/DESIGN.md`](https://github.com/albertoarena/filament-truss/blob/main/docs/DESIGN.md): architecture, and how the page gets its data
+- [`docs/DECISIONS.md`](https://github.com/albertoarena/filament-truss/blob/main/docs/DECISIONS.md): why it is built this way
+- [`CONTRIBUTING.md`](https://github.com/albertoarena/filament-truss/blob/main/CONTRIBUTING.md): how to work on it
+- [`CHANGELOG.md`](https://github.com/albertoarena/filament-truss/blob/main/CHANGELOG.md): what changed
 
 ## Testing
 
@@ -191,16 +191,16 @@ npm test        # Vitest, over the client-side files
 ```
 
 Rendering and interaction in a real panel are covered by hand, against
-[`docs/MANUAL-TESTS.md`](docs/MANUAL-TESTS.md), because neither suite has a panel
+[`docs/MANUAL-TESTS.md`](https://github.com/albertoarena/filament-truss/blob/main/docs/MANUAL-TESTS.md), because neither suite has a panel
 to render into.
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for recent changes.
+See [CHANGELOG.md](https://github.com/albertoarena/filament-truss/blob/main/CHANGELOG.md) for recent changes.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/albertoarena/filament-truss/blob/main/CONTRIBUTING.md).
 
 ## Security
 
@@ -229,10 +229,10 @@ once a month. No spam.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](https://github.com/albertoarena/filament-truss/blob/main/LICENSE).
 
 The licence covers the code. The project name and brand are separate: see
-[TRADEMARK.md](TRADEMARK.md), which defers to the
+[TRADEMARK.md](https://github.com/albertoarena/filament-truss/blob/main/TRADEMARK.md), which defers to the
 [Laravel Truss policy](https://github.com/albertoarena/laravel-truss/blob/main/TRADEMARK.md).
 
 **This plugin is not official, endorsed, or affiliated with the Filament

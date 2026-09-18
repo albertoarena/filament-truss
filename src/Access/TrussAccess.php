@@ -36,6 +36,14 @@ final class TrussAccess
     /**
      * @param  Authenticatable|null  $user  the viewer, or null to ask about whoever
      *                                      the gate resolves for the current request
+     *
+     * **Pass the viewer.** With null this asks `Gate::allows()`, which resolves
+     * the *default* guard rather than the panel's, so a panel authenticating
+     * against a guard of its own would have the gate asked about the wrong
+     * person. Unreachable as this package uses it, and deliberately so: both
+     * callers hand over `Filament::auth()->user()`, and Filament refuses a guest
+     * before the page is reached. Noted because the null path is public and
+     * reads as harmless.
      */
     public static function allows(?Authenticatable $user = null): bool
     {

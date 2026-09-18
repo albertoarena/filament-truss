@@ -255,12 +255,12 @@ the upgrade instead of shipping a button that opens an unfocused diagram.
 
 ## Hiding and revealing tables is Truss's, and this package adds no control
 
-**Context:** a panel on a 17 table database draws 8 of them, because Truss
+**Context:** a panel on a 16 table database draws 8 of them, because Truss
 excludes framework plumbing by config, and nothing on the page said so. The
 plugin-shaped answer was an option here, `->revealExcludedTables()`, so an
 application could decide per panel. Truss v1.13.0 answered it first and answered
 it differently: the payload always carries `excluded.count`, the footer reads
-`8 of 17 tables`, and a **Show hidden tables** toggle draws the hidden ones muted
+`8 of 16 tables`, and a **Show hidden tables** toggle draws the hidden ones muted
 when `truss.reveal_excluded` lets them leave the server at all (on in local, off
 elsewhere, matching `enabled` and the `viewTruss` gate, and with no query
 parameter, so the decision stays the operator's and never the viewer's).
