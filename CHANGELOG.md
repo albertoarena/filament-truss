@@ -9,7 +9,7 @@ Entries say what changed and what it means for you. The reasoning behind a chang
 lives in its commit, and the decisions behind a feature in
 [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
-## [Unreleased]
+## [1.0.1] - 2026-09-18
 
 ### Fixed
 
