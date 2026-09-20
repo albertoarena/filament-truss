@@ -180,6 +180,7 @@ In this repository:
 - [`docs/DESIGN.md`](https://github.com/albertoarena/filament-truss/blob/main/docs/DESIGN.md): architecture, and how the page gets its data
 - [`docs/DECISIONS.md`](https://github.com/albertoarena/filament-truss/blob/main/docs/DECISIONS.md): why it is built this way
 - [`CONTRIBUTING.md`](https://github.com/albertoarena/filament-truss/blob/main/CONTRIBUTING.md): how to work on it
+- [`SECURITY.md`](https://github.com/albertoarena/filament-truss/blob/main/SECURITY.md): what counts as a vulnerability here, and how to report one privately
 - [`CHANGELOG.md`](https://github.com/albertoarena/filament-truss/blob/main/CHANGELOG.md): what changed
 
 ## Testing
