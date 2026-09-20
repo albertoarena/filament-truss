@@ -6,10 +6,17 @@ The latest released `1.x` line receives security fixes.
 
 ## Reporting a vulnerability
 
-Please do not open a public issue for security problems. Instead, email the
-maintainer at hello@albertoarena.it with a description of the issue and a way to
-reproduce it. You can expect an acknowledgement within a few days, and a fix or
-mitigation plan once the report is confirmed.
+Please do not open a public issue for security problems. Use either channel
+below, with a description of the issue and a way to reproduce it:
+
+- **[Report a vulnerability](https://github.com/albertoarena/filament-truss/security/advisories/new)**
+  on GitHub, which is private, keeps the report attached to this repository and
+  gives you the advisory thread to follow the fix in. Preferred.
+- Email the maintainer at hello@albertoarena.it, if you would rather not go
+  through GitHub.
+
+You can expect an acknowledgement within a few days, and a fix or mitigation plan
+once the report is confirmed.
 
 ## Scope
 
