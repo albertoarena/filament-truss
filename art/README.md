@@ -19,22 +19,35 @@ optional:
 
 ## filamentphp/
 
-Prepared for the plugin listing form, which asks for two images and gives a
-light theme as the hint. **They are a composition, not a screenshot**, and that
-is the difference between the first set and this one: the listing shows them in
-a grid beside two hundred others, at about a third of a card, and a cropped page
-with a small heading loses that grid before anyone reads the name. So the image
-carries the name, what it does, the three things it does, and the one command
-that installs it, with the real page beside it as the proof.
+Prepared for the plugin listing form, which gives a light theme as the hint.
+**They are a composition, not a screenshot**, and that is the difference between
+the first set and this one: the listing shows them in a grid beside two hundred
+others, at about a third of a card, and a cropped page with a small heading
+loses that grid before anyone reads the name. So the image carries the name,
+what it does, the three things it does, and the one command that installs it,
+with the real page beside it as the proof.
 
 | File | Form field | Size | Notes |
 | --- | --- | --- | --- |
-| `image-light.jpg` | **Image** | 3200x1800 (16:9) | Light background, the recommended one. Also the README's light variant. |
-| `image-dark.jpg` | **Image**, backup | 3200x1800 (16:9) | Dark variant, and the README's dark one. |
-| `thumbnail-light.jpg` | **Thumbnail** | 2560x1440 (16:9) | Light background. |
-| `thumbnail-dark.jpg` | **Thumbnail** | 2560x1440 (16:9) | Dark variant. |
+| `image-light.jpg` | **Image** | 3200x1800 (16:9) | What was submitted, 20/09/2026. Also the README's light variant. |
+| `image-dark.jpg` | none | 3200x1800 (16:9) | Dark variant, held as the backup, and the README's dark one. |
+| `thumbnail-light.jpg` | none | 2560x1440 (16:9) | See below. |
+| `thumbnail-dark.jpg` | none | 2560x1440 (16:9) | See below. |
 
-Spec: image at least 2560x1440, thumbnail at least 1280x720, 16:9, JPEG.
+Spec: image at least 2560x1440, 16:9, JPEG.
+
+**The Thumbnail field is left empty, and the two thumbnails are not submitted.**
+The form takes one image and says plainly that a thumbnail should only be
+uploaded when it differs from it, offering a tighter crop for the plugins list
+as the example, and that the main image is used automatically otherwise. Ours
+does not differ: it is the same composition at a lower device scale factor, by
+design, because a thumbnail composed separately is a thumbnail that drifts.
+
+So they are kept for anywhere that wants the cover at half the weight, and a
+thumbnail is worth submitting only once it is composed for a card rather than
+scaled down to one. At list size the wordmark and the shape of the window carry;
+the tagline, the pills and the install line do not, and a real thumbnail would
+drop them and bring the diagram closer.
 
 The README links `image-light.jpg` and `image-dark.jpg` from `raw.githubusercontent.com`
 on `main`, so replacing a file replaces what the README shows, with no change to
