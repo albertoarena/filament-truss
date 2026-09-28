@@ -12,6 +12,8 @@ use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
+use UnitEnum;
 
 /**
  * The database structure, drawn inside the panel.
@@ -23,6 +25,17 @@ class SchemaPage extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCircleStack;
 
+    /**
+     * Redeclared so the page owns its slot in the sidebar. A static property
+     * is shared down the hierarchy unless a subclass redeclares it: without
+     * these, `SchemaPage::navigationGroup('System')` would write the base
+     * page's property and drag every page that does not redeclare it — the
+     * Dashboard, plain app pages — into that group as well.
+     */
+    protected static string|UnitEnum|null $navigationGroup = null;
+
+    protected static ?int $navigationSort = null;
+
     protected static ?string $slug = 'database-schema';
 
     protected string $view = 'filament-truss::pages.schema';
@@ -30,6 +43,21 @@ class SchemaPage extends Page
     public static function getNavigationLabel(): string
     {
         return __('filament-truss::schema.navigation_label');
+    }
+
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return static::plugin()?->getNavigationGroup() ?? parent::getNavigationGroup();
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return static::plugin()?->getNavigationSort() ?? parent::getNavigationSort();
+    }
+
+    public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
+    {
+        return static::plugin()?->getNavigationIcon() ?? parent::getNavigationIcon();
     }
 
     /**
@@ -88,7 +116,7 @@ class SchemaPage extends Page
      */
     protected function getHeaderActions(): array
     {
-        if (! $this->plugin()?->hasDocumentationLink()) {
+        if (! static::plugin()?->hasDocumentationLink()) {
             return [];
         }
 
@@ -110,7 +138,7 @@ class SchemaPage extends Page
      * the suite, with no panel around it, and a page that cannot find its own
      * plugin should show one thing less rather than fail.
      */
-    private function plugin(): ?FilamentTrussPlugin
+    private static function plugin(): ?FilamentTrussPlugin
     {
         $panel = Filament::getCurrentPanel();
 

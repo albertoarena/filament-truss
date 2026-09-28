@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use AlbertoArena\FilamentTruss\FilamentTrussPlugin;
 use AlbertoArena\FilamentTruss\Pages\SchemaPage;
+use Filament\Facades\Filament;
+use Filament\Pages\Page;
 use Filament\Panel;
+use Filament\Support\Icons\Heroicon;
 
 it('identifies itself by the package name', function () {
     // The id is how a panel addresses the plugin, so it is a published
@@ -39,4 +42,44 @@ it('points the documentation link at the guide, tagged so arrivals can be counte
         ->toContain('utm_source=filament-panel')
         ->toContain('utm_medium=referral')
         ->toContain('utm_campaign=filament-truss');
+});
+
+it('places the page where the panel says, without touching the base page', function () {
+    // The page owns its navigation slot: group, sort and icon come from the
+    // plugin, the same three knobs other panel plugins offer.
+    $panel = Panel::make()->id('placed')->plugin(
+        FilamentTrussPlugin::make()->navigationGroup('System')->navigationSort(9)->navigationIcon('heroicon-o-table-cells'),
+    );
+
+    Filament::setCurrentPanel($panel);
+
+    expect(SchemaPage::getNavigationGroup())->toBe('System')
+        ->and(SchemaPage::getNavigationSort())->toBe(9)
+        ->and(SchemaPage::getNavigationIcon())->toBe('heroicon-o-table-cells')
+        ->and(Page::getNavigationGroup())->toBeNull();
+});
+
+it('keeps a static setter on the page from bleeding into every other page', function () {
+    // A static property is shared down the hierarchy unless redeclared. With
+    // its own declarations the page can be configured the old way too and
+    // the Dashboard stays where it was.
+    SchemaPage::navigationGroup('System');
+    SchemaPage::navigationSort(9);
+
+    expect(Page::getNavigationGroup())->toBeNull()
+        ->and(Page::getNavigationSort())->toBeNull()
+        ->and(SchemaPage::getNavigationGroup())->toBe('System');
+
+    SchemaPage::navigationGroup(null);
+    SchemaPage::navigationSort(null);
+});
+
+it('stays ungrouped when the panel says nothing', function () {
+    $panel = Panel::make()->id('ungrouped')->plugin(FilamentTrussPlugin::make());
+
+    Filament::setCurrentPanel($panel);
+
+    expect(SchemaPage::getNavigationGroup())->toBeNull()
+        ->and(SchemaPage::getNavigationSort())->toBeNull()
+        ->and(SchemaPage::getNavigationIcon())->toBe(Heroicon::OutlinedCircleStack);
 });
