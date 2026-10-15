@@ -167,6 +167,20 @@ which is on by default and off in one call:
 $panel->plugin(FilamentTrussPlugin::make()->documentationLink(false));
 ```
 
+Where the page sits in the sidebar is set on the plugin — group, sort and icon, the same three knobs other panel plugins offer:
+
+```php
+$panel->plugin(
+    FilamentTrussPlugin::make()
+        ->navigationGroup('System')
+        ->navigationSort(9)
+        ->navigationIcon('heroicon-o-table-cells'),
+);
+```
+
+Prefer these over the page's static setters (`SchemaPage::navigationGroup('System')`): a static property is shared down the class hierarchy, so a setter call on a page that does not own the property writes `Filament\Pages\Page` itself — and every page that inherits it, the Dashboard included, moves into that group too. The page now declares its own group and sort, so the setters are safe as well, but the plugin is the documented way.
+```
+
 ## Documentation
 
 **The user guide lives at [trussphp.com](https://trussphp.com/filament/?utm_source=github&utm_medium=readme&utm_campaign=filament-truss)**, in a section of
