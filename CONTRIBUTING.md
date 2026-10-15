@@ -65,6 +65,9 @@ release.
 - Commit messages as `type: short subject`, then a body explaining what and why,
   not how.
 - Do not use em dashes or en dashes in prose.
+- No AI attribution: no `Co-Authored-By` trailers for AI tools in commits, and
+  no "Generated with" footers in pull requests, issues or comments. Using a tool
+  is fine; you are the author of what you submit.
 
 ## Reporting bugs
 
