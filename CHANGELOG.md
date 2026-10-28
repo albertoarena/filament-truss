@@ -9,7 +9,7 @@ Entries say what changed and what it means for you. The reasoning behind a chang
 lives in its commit, and the decisions behind a feature in
 [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
-## [Unreleased]
+## [1.1.0] - 2026-10-28
 
 ### Added
 
@@ -25,6 +25,12 @@ lives in its commit, and the decisions behind a feature in
   those properties itself, so the setters wrote Filament's base page and the
   Dashboard, along with every page that does not declare its own, followed the
   schema page into the same group. Reported by @grafst in #5.
+
+### Development
+
+- Test and CI tooling only, nothing shipped changed: vitest 5.0.5, happy-dom
+  21.0.4 (the commit for #10 says 21.0.0, but 21.0.4 is what was locked), and
+  newer `setup-node` and `setup-php` actions.
 
 ## [1.0.1] - 2026-09-18
 
