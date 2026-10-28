@@ -389,3 +389,19 @@ says where it is.
 **The subheading is not switchable**, deliberately. It is one sentence, it names
 the promise in the place where the person who would most want to know it is
 looking, and a panel that wants different words can translate it.
+
+## Sidebar placement is configured on the plugin
+
+**Context:** the only way to put the page in a sidebar group was Filament's
+static setter, `SchemaPage::navigationGroup('System')`. The page did not declare
+`$navigationGroup` itself, so the setter wrote `Filament\Pages\Page`'s property
+and every page without its own declaration, the Dashboard included, moved into
+the group. Reported in #5.
+**Decision:** the page declares its own `$navigationGroup`, `$navigationSort` and
+`$navigationParentItem`, so the setters stay on it, and the plugin gains
+`navigationGroup()`, `navigationSort()` and `navigationIcon()`, which win over the
+statics when set. `$navigationLabel` is not redeclared: the page overrides
+`getNavigationLabel()` for translation, so that setter has no effect here.
+**Trade-off:** three more methods of plugin API. They match what other panel
+plugins offer, and they are per panel, where a static setter is global to the
+process.

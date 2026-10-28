@@ -9,6 +9,23 @@ Entries say what changed and what it means for you. The reasoning behind a chang
 lives in its commit, and the decisions behind a feature in
 [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
+## [Unreleased]
+
+### Added
+
+- **Sidebar placement on the plugin.** `navigationGroup()`, `navigationSort()`
+  and `navigationIcon()` on `FilamentTrussPlugin`, each taking a value or a
+  closure. They apply to the panel the plugin was added to and take precedence
+  over the page's static setters.
+
+### Fixed
+
+- `SchemaPage::navigationGroup()`, `navigationSort()` and
+  `navigationParentItem()` no longer move other pages. The page did not declare
+  those properties itself, so the setters wrote Filament's base page and the
+  Dashboard, along with every page that does not declare its own, followed the
+  schema page into the same group. Reported by @grafst in #5.
+
 ## [1.0.1] - 2026-09-18
 
 ### Fixed
