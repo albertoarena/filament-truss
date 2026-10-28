@@ -86,6 +86,12 @@ that depend on markup this package reproduces rather than owns.
 
 - [ ] The navigation item reads as the feature rather than the package, with the
       circle-stack icon.
+- [ ] Register the plugin with `->navigationGroup('System')->navigationSort(9)`:
+      the item moves into a **System** group, and **the Dashboard and the
+      panel's other pages stay where they were**. Then remove those calls and
+      use `SchemaPage::navigationGroup('System')` in the panel provider: same
+      result. Before the page declared its own properties, the static setter
+      moved the Dashboard into the group too.
 - [ ] The diagram is contained: the blueprint grid is inside the bordered box
       only, not behind the sidebar, the topbar or the whole admin.
 - [ ] The box has a sensible height on a laptop viewport, and the page does not

@@ -167,6 +167,20 @@ which is on by default and off in one call:
 $panel->plugin(FilamentTrussPlugin::make()->documentationLink(false));
 ```
 
+Where the page sits in the sidebar is set on the plugin: its group, its sort
+order and its icon. Each takes a value or a closure:
+
+```php
+$panel->plugin(
+    FilamentTrussPlugin::make()
+        ->navigationGroup('System')
+        ->navigationSort(9)
+        ->navigationIcon('heroicon-o-table-cells'),
+);
+```
+
+Unset, the page is ungrouped, unsorted and keeps its circle-stack icon.
+
 ## Documentation
 
 **The user guide lives at [trussphp.com](https://trussphp.com/filament/?utm_source=github&utm_medium=readme&utm_campaign=filament-truss)**, in a section of
