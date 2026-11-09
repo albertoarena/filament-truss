@@ -45,7 +45,7 @@
         "composer/semver": "^3.0",
         "laravel/pint": "^1.18",
         "orchestra/testbench": "^10.0 || ^11.0",
-        "pestphp/pest": "^3.5"
+        "pestphp/pest": "^5.3"
     },
     "autoload": {
         "psr-4": {
